@@ -1,0 +1,17 @@
+python=3.11
+conda
+awscli
+cdsapi
+matplotlib
+numpy
+scipy
+pandas
+sympy
+netCDF4
+python-cdo
+python-eccodes
+pyproj
+xarray
+spyder-kernels==3.0.0
+spyder
+pyyaml
