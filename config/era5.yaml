@@ -11,7 +11,7 @@ output:                                 # I/O Control =====
   prefix:                               # Filename naming convention
     pres_lev: "era5pl"                  # prefix for upper data
     sing_lev: "era5sl"                  # prefix for surface data
-    combine: "e5"                       # prefix for combined data
+    combine: "e5dlamp"                  # prefix for combined data
     timestr_fmt: "%Y%m%d_%H%M"          # time string format
 
 area:                                   # Domain Control =====
@@ -20,7 +20,7 @@ area:                                   # Domain Control =====
   west: 114                             # west bounds in longitudes
   east: 128                             # east bounds in longitudes
 
-upper_dataset:
+dataset_upper:
   title: "reanalysis-era5-pressure-levels"
   levels: [1000, 975, 950, 925, 900,
             875, 850, 825, 800, 775,
@@ -41,23 +41,23 @@ upper_dataset:
     - 'specific_snow_water_content'          # QSNOW_p = cswc/(1-cswc)
     - 'divergence'
     - 'potential_vorticity'
-    - 'vertical_velocity'             # wa_p = w*287.05 *(t*(0.622+qvp)/(0.622*(1+qvp)))/prs/g
+    - 'vertical_velocity'                    # wa_p = w*287.05 *(t*(0.622+qvp)/(0.622*(1+qvp)))/prs/g
     - 'vorticity'
 
-surface_dataset:
+dataset_surface:
   title: "reanalysis-era5-single-levels"
   variables:
-    - '10m_u_component_of_wind'       # umet10 = \10u
-    - '10m_v_component_of_wind'       # vmet10 = \10v
-    - '2m_dewpoint_temperature'       # td2 = \2d
-    - '2m_temperature'                # t2 = \2t
-    - 'mean_sea_level_pressure'       # MSLP = msp
-    - 'sea_surface_temperature'       # SST = sst
-    - 'surface_pressure'              # PSFC = sp
-    - 'total_precipitation'           # RAINNC = tp
-    - 'boundary_layer_height'         # PBLH = blh
+    - '10m_u_component_of_wind'              # umet10 = \10u
+    - '10m_v_component_of_wind'              # vmet10 = \10v
+    - '2m_dewpoint_temperature'              # td2 = \2d
+    - '2m_temperature'                       # t2 = \2t
+    - 'mean_sea_level_pressure'              # MSLP = msp
+    - 'sea_surface_temperature'              # SST = sst
+    - 'surface_pressure'                     # PSFC = sp
+    - 'total_precipitation'                  # RAINNC = tp
+    - 'boundary_layer_height'                # PBLH = blh
     - 'skin_temperature'
-    - 'total_column_water_vapour'     # pw = tcwv
-    - 'surface_solar_radiation_downwards'  # SWDOWN
-    - 'toa_incident_solar_radiation'       # S0
-    - 'top_net_thermal_radiation'          # OLR
+    - 'total_column_water_vapour'            # pw = tcwv
+    - 'surface_solar_radiation_downwards'    # SWDOWN
+    - 'toa_incident_solar_radiation'         # S0
+    - 'top_net_thermal_radiation'            # OLR
