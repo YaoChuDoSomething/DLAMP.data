@@ -1,30 +1,32 @@
-XLAT, "LATITUDE, SOUTH IS NEGATIVE", degree_north,
-XLONG, "LONGITUDE, WEST IS NEGATIVE", degree_east,
-HGT, "Terrain Height", m,
-LANDMASK, "LAND MASK (1 FOR LAND, 0 FOR WATER)", 1,
-T2, "TEMP at 2 M", K,
-Q2, "QV at 2 M", kg kg-1,
-rh2, "2m Relative Humidity", %,
-td2, "2m Dew Point Temperature", K,
-umet10, "earth rotated u 10m", m s-1,
-vmet10, "earth rotated v 10m", m s-1,
-slp, "Sea Level Pressure", hPa,
-SST, "SEA SURFACE TEMPERATURE", K,
-PSFC, "SFC PRESSURE", Pa,
-pw, "Precipitable Water", kg m-2,
-tk_p, "Temperature in Kelvin", K,
-umet_p, "earth rotated u", m s-1,
-vmet_p, "earth rotated v", m s-1,
-wa_p, "W-component of Wind on Mass Points", m s-1,
-z_p, "geopotential height (MSL)", m,
-QVAPOR_p, "Water vapor mixing ratio", kg kg-1,
-QRAIN_p, "Rain water mixing ratio", kg kg-1,
-QSNOW_p, "Snow mixing ratio", kg kg-1,
-QGRAUP_p, "Graupel mixing ratio", kg kg-1,
-QCLOUD_p, "Cloud water mixing ratio", kg kg-1,
-QICE_p, "Ice mixing ratio", kg kg-1,
-PBLH, "PBL HEIGHT", m,
-RAINNC, "ACCUMULATED TOTAL GRID SCALE PRECIPITATION", mm,
-SWDOWN, "DOWNWARD SHORT WAVE FLUX AT GROUND SURFACE", W m-2,
-OLR, "TOA OUTGOING LONG WAVE", W m-2,
-REFL, "Observed Radar Reflectivity", dBZ,
+no, name, long_name, units
+1, XLAT, latitude_(south_is_negative), degree_north
+2, XLONG, longitude_(west_is_negative), degree_east
+3, pres_levels, air_pressure, hPa
+4, HGT, terrain_height, m
+5, LANDMASK, land_mask_(1_for_land_and_0_for_water),
+6, T2, temperature_at_2_m, K
+7, Q2, water_vapor_mixing_ratio_at_2_m, kg kg-1
+8, rh2, relative_humidity_at_2m, %
+9, td2, dew_point_temperature_at_2m, K
+10, umet10, earth_rotated_u_10m, m s-1
+11, vmet10, earth_rotated_v_10m, m s-1
+12, slp, sea_level_pressure, hPa
+13, SST, sea_surface_temperature, K
+14, PSFC, sfc_pressure, Pa
+15, pw, precipitable_water, kg m-2
+16, tk_p, air_temperature_in_kelvin, K
+17, umet_p, earth_rotated_u, m s-1
+18, vmet_p, earth_rotated_v, m s-1
+19, wa_p, w-component_of_wind_on_mass_points, m s-1
+20, z_p, geopotential_height_(msl), m
+21, QVAPOR_p, water_vapor_mixing_ratio, kg kg-1
+22, QRAIN_p, rain_water_mixing_ratio, kg kg-1
+23, QSNOW_p, snow_water_mixing_ratio, kg kg-1
+24, QGRAUP_p, graupel_mixing_ratio, kg kg-1
+25, QCLOUD_p, cloud_water_mixing_ratio, kg kg-1
+26, QICE_p, cloud_ice_mixing_ratio, kg kg-1
+27, PBLH, pbl_height, m
+28, RAINNC, accumulated_total_grid_scale_precipitation, mm
+29, SWDOWN, downward_short_wave_flux_at_ground_surface, W m-2
+30, OLR, outgoing_long_wave_at_toa, W m-2
+31, REFL, observed_radar_reflectivity, dBZ
