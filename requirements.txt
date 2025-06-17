@@ -1,12 +1,14 @@
 pyyaml
 cdsapi
+xarray
+cftime
+cfgrib
 matplotlib
 numpy
 scipy
+pandas
 netCDF4
-cdo
 eccodes
 pyproj
-xarray
 importlib
 argparse
