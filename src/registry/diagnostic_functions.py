@@ -92,77 +92,77 @@ def diag_HGT(ds: xr.Dataset) -> xr.DataArray:
     """
     [Static Variable] Terrain Height 
     """
-    data = ds["HGT"].values
+    data = np.squeeze(ds["HGT"].values)
     return _create_dataarray(data, ds, "HGT", "Terrain Height", "m")
 
 def diag_LANDMASK(ds: xr.Dataset) -> xr.DataArray:
     """
     [Static Variable] Land-Sea Mask
     """
-    data = ds["LANDMASK"].values
+    data = np.squeeze(ds["LANDMASK"].values)
     return _create_dataarray(data, ds, "LANDMASK", "land-sea mask (land=1, sea=0)", "1")
 
 def diag_z_p(ds: xr.Dataset) -> xr.DataArray:
     """
     Geopotential height = geopotential / g
     """
-    data = ds["z"].values / 9.81
+    data = np.squeeze(ds["z"].values / 9.81)
     return _create_dataarray(data, ds, "z_p", "Geopotential Height", "m")
 
 def diag_tk_p(ds: xr.Dataset) -> xr.DataArray:
     """
     Air Temperature [K]
     """
-    data = ds["t"].values
+    data = np.squeeze(ds["t"].values)
     return _create_dataarray(data, ds, "tk_p", "Air Temperature", "K")
 
 def diag_umet_p(ds: xr.Dataset) -> xr.DataArray:
     """
     U-component of wind
     """
-    data = ds["u"].values
+    data = np.squeeze(ds["u"].values)
     return _create_dataarray(data, ds, "umet_p", "U-component of Wind", "m/s")
 
 def diag_vmet_p(ds: xr.Dataset) -> xr.DataArray:
     """
     V-component of wind
     """
-    data = ds["v"].values
+    data = np.squeeze(ds["v"].values)
     return _create_dataarray(data, ds, "vmet_p", "V-component of Wind", "m/s")
 
 def diag_QVAPOR_p(ds: xr.Dataset) -> xr.DataArray:
     """
     Specific humidity to water vapor mixing ratio
     """
-    data = ds["q"].values / (1 - ds["q"].values)
+    data = np.squeeze(ds["q"].values) / (1 - np.squeeze(ds["q"].values))
     return _create_dataarray(data, ds, "QVAPOR_p", "Water Vapor Mixing Ratio", "kg/kg")
 
 def diag_QRAIN_p(ds: xr.Dataset) -> xr.DataArray:
     """
     Specific rain water content to rain water mixing ratio
     """
-    data = ds["crwc"].values / (1 - ds["crwc"].values)
+    data = np.squeeze(ds["crwc"].values) / (1 - np.squeeze(ds["crwc"].values))
     return _create_dataarray(data, ds, "QRAIN_p", "Rain Water Mixing Ratio", "kg/kg")
 
 def diag_QCLOUD_p(ds: xr.Dataset) -> xr.DataArray:
     """
     Specific cloud liquid water content to cloud water mixing ratio
     """
-    data = ds["clwc"].values / (1 - ds["clwc"].values)
+    data = np.squeeze(ds["clwc"].values) / (1 - np.squeeze(ds["clwc"].values))
     return _create_dataarray(data, ds, "QCLOUD_p", "Cloud Water Mixing Ratio", "kg/kg")
 
 def diag_QSNOW_p(ds: xr.Dataset) -> xr.DataArray:
     """
     Specific snow water content to snow water mixing ratio
     """
-    data = ds["cswc"].values / (1 - ds["cswc"].values)
+    data = np.squeeze(ds["cswc"].values) / (1 - np.squeeze(ds["cswc"].values))
     return _create_dataarray(data, ds, "QSNOW_p", "Snow Water Mixing Ratio", "kg/kg")
 
 def diag_QICE_p(ds: xr.Dataset) -> xr.DataArray:
     """
     Specific cloud ice content to cloud ice mixing ratio
     """
-    data = ds["ciwc"].values / (1 - ds["ciwc"].values)
+    data = np.squeeze(ds["ciwc"].values) / (1 - np.squeeze(ds["ciwc"].values))
     return _create_dataarray(data, ds, "QICE_p", "Cloud Ice Mixing Ratio", "kg/kg")
 
 def diag_QGRAUP_p(ds: xr.Dataset) -> xr.DataArray:
@@ -171,15 +171,15 @@ def diag_QGRAUP_p(ds: xr.Dataset) -> xr.DataArray:
     """
     # 這裡的診斷邏輯是 ds["q"].values * 0，如果其維度應該與 ds["q"] 相同，
     # 則應該使用 ds["q"] 來推斷維度。
-    data = ds["q"].values * 0
+    data = np.squeeze(ds["q"].values * 0)
     return _create_dataarray(data, ds, "QGRAUP_p", "Graupel Water Mixing Ratio", "kg/kg")
 
 def diag_wa_p(ds: xr.Dataset) -> xr.DataArray:
     """
     omega [Pa s-1] to w [m s-1]
     """
-    tmk = ds["t"].values
-    qvp = ds["q"].values / (1 - ds["q"].values)
+    tmk = np.squeeze(ds["t"].values)
+    qvp = np.squeeze(ds["q"].values) / (1 - np.squeeze(ds["q"].values))
 
     # 注意：plev(lev) 語法錯誤，應該是 plev[lev]
     # 這裡的邏輯需要確保 prs 的維度與 tmk 匹配
@@ -220,12 +220,12 @@ def diag_wa_p(ds: xr.Dataset) -> xr.DataArray:
     #prs_val = ds["pres_levels"] * 100 # hPa to Pa
     # 確保 prs_val 可以與 tmk 和 qvp 進行廣播
     # 如果 prs_val 是 (level,)，tmk 是 (Time, Level, Lat, Lon)，則會自動廣播
-    plev = ds["plev"].values # hPa to Pa
+    plev = np.squeeze(ds["plev"].values) # hPa to Pa
     prs = np.ones(np.shape(tmk))
     for lv in range(len(plev)):
-        prs[:,lv,:,:] = plev[lv]
+        prs[lv,:,:] = plev[lv]
     
-    data = ds["w"].values * 287.05 * (tmk * (1 + 0.61 * qvp)) / prs / 9.81
+    data = np.squeeze(ds["w"].values) * 287.05 * (tmk * (1 + 0.61 * qvp)) / prs / 9.81
     
     # 這裡假設 diag_wa_p 的輸出是 4D (Time, pres_bottom_top, south_north, west_east)
     return _create_dataarray(data, ds, "wa_p", "Vertical Velocity", "m/s")
@@ -234,78 +234,79 @@ def sat_vapor_pressure(T):  # T in Celsius
     return 6.112 * np.exp((17.67 * T) / (T + 243.5))  # hPa
 
 def diag_T2(ds: xr.Dataset) -> xr.DataArray:
-    data = ds["2t"].values
+    data = np.squeeze(ds["2t"].values)
     return _create_dataarray(data, ds, "T2", "2m Temperature", "K")
 
 def diag_Q2(ds: xr.Dataset) -> xr.DataArray:
-    td_C = ds["2d"].values - 273.15
+    td_C = np.squeeze(ds["2d"].values) - 273.15
     e = sat_vapor_pressure(td_C) * 100 # Pa
     # 檢查 ds["sp"] 是否是表面壓力的正確變數名
     # q2 = 0.622 * e / (ds["sp"].values - e)
     # 如果 ds["sp"] 是 surface pressure (Pa)，這公式是正確的
-    data = 0.622 * e / (ds["sp"].values - e)
+    data = 0.622 * e / (np.squeeze(ds["sp"].values) - e)
     return _create_dataarray(data, ds, "Q2", "2m Mixing Ratio", "kg/kg")
 
 def diag_rh2(ds: xr.Dataset) -> xr.DataArray:
-    T2_C = ds["2t"].values - 273.15
-    Td2_C = ds["2d"].values - 273.15
+    T2_C = np.squeeze(ds["2t"].values) - 273.15
+    Td2_C = np.squeeze(ds["2d"].values) - 273.15
     e_sat = sat_vapor_pressure(T2_C) * 100
     e = sat_vapor_pressure(Td2_C) * 100
     data = e / e_sat * 100
     return _create_dataarray(data, ds, "rh2", "2m Relative Humidity", "%")
 
 def diag_td2(ds: xr.Dataset) -> xr.DataArray:
-    data = ds["2d"].values
+    data = np.squeeze(ds["2d"].values)
     return _create_dataarray(data, ds, "td2", "2m Dew Point Temperature", "K")
 
 def diag_umet10(ds: xr.Dataset) -> xr.DataArray:
-    data = ds["10u"].values
+    data = np.squeeze(ds["10u"].values)
+    #print(np.shape(data), ds["10u"].dims)
     return _create_dataarray(data, ds, "umet10", "10m U-component of Wind", "m/s")
 
 def diag_vmet10(ds: xr.Dataset) -> xr.DataArray:
-    data = ds["10v"].values
+    data = np.squeeze(ds["10v"].values)
     return _create_dataarray(data, ds, "vmet10", "10m V-component of Wind", "m/s")
 
 def diag_slp(ds: xr.Dataset) -> xr.DataArray:
-    data = ds["msl"].values / 100 # Pa to hPa
+    data = np.squeeze(ds["msl"].values) / 100 # Pa to hPa
     return _create_dataarray(data, ds, "slp", "Sea Level Pressure", "hPa")
 
 def diag_SST(ds: xr.Dataset) -> xr.DataArray:
-    data = ds["sst"].values
+    data = np.squeeze(ds["sst"].values)
     return _create_dataarray(data, ds, "SST", "Sea Surface Temperature", "K")
 
 def diag_PSFC(ds: xr.Dataset) -> xr.DataArray:
-    data = ds["sp"].values
+    data = np.squeeze(ds["sp"].values)
     return _create_dataarray(data, ds, "PSFC", "Surface Pressure", "Pa")
 
 def diag_pw(ds: xr.Dataset) -> xr.DataArray:
-    data = ds["tcwv"].values
+    data = np.squeeze(ds["tcwv"].values)
     return _create_dataarray(data, ds, "pw", "Precipitable Water", "kg/m^2")
 
 def diag_PBLH(ds: xr.Dataset) -> xr.DataArray:
-    data = ds["blh"].values
+    data = np.squeeze(ds["blh"].values)
     return _create_dataarray(data, ds, "PBLH", "Planetary Boundary Layer Height", "m")
 
 def diag_RAINNC(ds: xr.Dataset) -> xr.DataArray:
-    data = ds["tp"].values
+    data = np.squeeze(ds["tp"].values)
     return _create_dataarray(data, ds, "RAINNC", "Total Precipitation", "m") # 單位需要確認是累積降水還是速率
 
 def diag_SWDOWN(ds: xr.Dataset) -> xr.DataArray:
-    data = ds["ssrd"].values
+    data = np.squeeze(ds["ssrd"].values)
     return _create_dataarray(data, ds, "SWDOWN", "Surface Shortwave Downward Radiation", "W/m^2") # 單位需要確認
 
 def diag_OLR(ds: xr.Dataset) -> xr.DataArray:
-    data = ds["ttr"].values
+    data = np.squeeze(ds["ttr"].values)
     return _create_dataarray(data, ds, "OLR", "Outgoing Longwave Radiation", "W/m^2") # 單位需要確認
 
 def diag_REFL(ds: xr.Dataset) -> xr.DataArray:
     sn0 = 1
     ivarint = 1
-    tmk = ds["t"].values
-    qvp = ds["q"].values / (1 - ds["q"].values)
-    qra = ds["crwc"].values / (1 - ds["crwc"].values)
-    qsn = ds["cswc"].values / (1 - ds["cswc"].values)
-    qgr = ds["q"].values * 0 # qgr = 0
+    tmk = np.squeeze(ds["t"].values)
+    qvp = np.squeeze(ds["q"].values) / (1 - np.squeeze(ds["q"].values))
+    qra = np.squeeze(ds["crwc"].values) / (1 - np.squeeze(ds["crwc"].values))
+    qsn = np.squeeze(ds["cswc"].values) / (1 - np.squeeze(ds["cswc"].values))
+    qgr = np.squeeze(ds["q"].values) * 0 # qgr = 0
 
     qvp = np.maximum(qvp, 0)
     qra = np.maximum(qra, 0)
@@ -319,10 +320,10 @@ def diag_REFL(ds: xr.Dataset) -> xr.DataArray:
 
     # 這裡的 prs 處理方式與 diag_wa_p 類似，需要確保與 tmk 維度兼容
     # 假設 ds["pres_levels"] 是壓力值 DataArray
-    plev = ds["plev"].values # hPa to Pa
+    plev = np.squeeze(ds["plev"].values) # hPa to Pa
     prs = np.ones(np.shape(tmk))
     for lv in range(len(plev)):
-        prs[:,lv,:,:] = plev[lv]
+        prs[lv,:,:] = plev[lv]
     
     # 再次確認 virtual_t 的計算公式，這裡應該是混合比 (mixing ratio)
     virtual_t = tmk * (1 + 0.61 * qvp)
@@ -342,7 +343,7 @@ def diag_REFL(ds: xr.Dataset) -> xr.DataArray:
     
     # mxdbz = np.max(dbz, 1) 表示對第二個維度 (pres_bottom_top) 取最大值
     # 輸出將是 (Time, south_north, west_east)
-    data = np.max(dbz, axis=1) # axis=1 通常代表第二個維度，這裡是指 pres_bottom_top
+    data = np.max(dbz, axis=0) # axis=1 通常代表第二個維度，這裡是指 pres_bottom_top
     
     # 這裡假設輸出是 3D，且時間維度是第一個維度
     return _create_dataarray(data, ds, "mREFL", "Emulated Radar Reflectivity", "dBZ")
