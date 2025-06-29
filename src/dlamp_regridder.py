@@ -87,14 +87,18 @@ class DataRegridder:
         # Preload target grids to prevent repeated file opening
         self.regrid = self.cfg["regrid"]
         self.target_nc = self.regrid["target_nc"]
-        self.xaxis = self.regrid["longitude_varname"]
-        self.yaxis = self.regrid["latitude_varname"]
-        self.paxis = self.regrid["zaxis_varname"]
+        self.tgtlon = self.regrid["target_lon"]
+        self.tgtlat = self.regrid["target_lat"]
+        self.tgtpres = self.regrid["target_pres"]
+        self.srclon = self.regrid["source_lon"]
+        self.srclat = self.regrid["source_lat"]
+        self.srcpres = self.regrid["source_pres"]
         self.levels = self.regrid["levels"]
         self.adopted_varlist = self.regrid["adopted_varlist"]
+        self.write_nc = self.regrid["write_nc"]
         with xr.open_dataset(self.target_nc, engine="netcdf4") as tgtds:
-            self.XLONG = tgtds[self.xaxis].values
-            self.XLAT = tgtds[self.yaxis].values
+            self.XLONG = tgtds[self.tgtlon].values
+            self.XLAT = tgtds[self.tgtlat].values
             self.static = tgtds[self.adopted_varlist]
 
         # Diagnostics module
@@ -160,8 +164,8 @@ class DataRegridder:
             dict: The updated dictionary with interpolated data.
         """
         with xr.open_dataset(src_nc, engine="netcdf4") as ncds:
-            lon = ncds["lon"].values
-            lat = ncds["lat"].values
+            lon = ncds[self.srclon].values
+            lat = ncds[self.srclat].values
             if np.ndim(lon) == 1 and np.ndim(lat) == 1:
                 lons, lats = np.meshgrid(lon, lat)
             else:
@@ -184,11 +188,11 @@ class DataRegridder:
                     for pl in range(nl):
                         d = data[pl].ravel()
                         data_h[pl] = griddata(points, d, xi, method="linear")
-                    interp_dict[var] = (dim3d, np.expand_dims(data_h, axis=0))
+                    interp_dict[var] = (dim3d, np.expand_dims(data_h, axis=0).astype(float))
                 elif data.ndim == 2:
                     d = data.ravel()
                     data_h = griddata(points, d, xi, method="linear")
-                    interp_dict[var] = (dim2d, np.expand_dims(data_h, axis=0))
+                    interp_dict[var] = (dim2d, np.expand_dims(data_h, axis=0).astype(float))
 
         return interp_dict
 
@@ -203,29 +207,31 @@ class DataRegridder:
         pl_nc, sl_nc, regrid_nc, output_nc = self.gen_io_filename(curr_time)
 
         # Ensure NetCDF files exist, otherwise skip this timestep
-        if not os.path.exists(pl_nc) or not os.path.exists(sl_nc):
+        if not os.path.exists(pl_nc) and not os.path.exists(sl_nc):
             print(f"[WARN] Missing input NetCDF files for {curr_time}, skipping.")
             return
 
         interp_dict = {}
 
         # Horizontally interpolate pressure level data
-        interp_dict = self.interp_horizontal(
-            interp_dict,
-            curr_time,
-            pl_nc,
-            self.XLONG,
-            self.XLAT,
-        )
+        if os.path.exists(pl_nc)
+            interp_dict = self.interp_horizontal(
+                interp_dict,
+                curr_time,
+                pl_nc,
+                self.XLONG,
+                self.XLAT,
+            )
 
         # Horizontally interpolate surface level data
-        interp_dict = self.interp_horizontal(
-            interp_dict,
-            curr_time,
-            sl_nc,
-            self.XLONG,
-            self.XLAT,
-        )
+        if os.path.exists(sl_nc)
+            interp_dict = self.interp_horizontal(
+                interp_dict,
+                curr_time,
+                sl_nc,
+                self.XLONG,
+                self.XLAT,
+            )
 
         # Add static variables to the interpolation dictionary
         # Ensure correct dimensions for static variables;
@@ -262,8 +268,11 @@ class DataRegridder:
             }
         )
 
-        interp_ds.to_netcdf(regrid_nc, format="NETCDF4")
-        print(f"[DONE] Saved interpolated NetCDF for {curr_time}")
+        if self.write_nc:
+            interp_ds.to_netcdf(regrid_nc, format="NETCDF4")
+            print(f"[DONE] Saved interpolated NetCDF for {curr_time}")
+        else:
+            print(f"[DONE] interpolated NetCDF for {curr_time} without saving the data")
 
         # --- Diagnostic variable calculation and output ---
 
