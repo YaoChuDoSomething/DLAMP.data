@@ -1,7 +1,7 @@
 import importlib
 import yaml
 
-def load_diagnostics(yaml_path):
+def load_diagnostics(yaml_path, context=None):
     with open(yaml_path, "r") as f:
         cfg = yaml.safe_load(f)
     
@@ -11,13 +11,18 @@ def load_diagnostics(yaml_path):
     for name, item in reg_cfg.items():
         func_name = item["function"]
         module = importlib.import_module("src.registry.diagnostic_functions")
-        func = getattr(module, func_name)
+        raw_func = getattr(module, func_name)
+
+        def wrapped(ds, context=context, func=raw_func):
+            return func(ds, context=context)
+
         diagnostics[name] = {
             "requires": item["requires"],
-            "function": func,
+            "function": wrapped,
             "long_name": item.get("long_name", ""),
             "units": item.get("units", "")
         }
+
     return diagnostics
 
 def sort_diagnostics_by_dependencies(diagnostics):
