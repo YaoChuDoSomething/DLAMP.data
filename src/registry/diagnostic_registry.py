@@ -1,28 +1,21 @@
 import importlib
 import yaml
 
-def load_diagnostics(yaml_path, context=None):
+def load_diagnostics(yaml_path):
     with open(yaml_path, "r") as f:
         cfg = yaml.safe_load(f)
     
-    reg_cfg = cfg.get("registry", {})
+    reg_cfg = cfg["registry"].get("varname", "")
     diagnostics = {}
 
     for name, item in reg_cfg.items():
         func_name = item["function"]
         module = importlib.import_module("src.registry.diagnostic_functions")
-        raw_func = getattr(module, func_name)
-
-        def wrapped(ds, context=context, func=raw_func):
-            return func(ds, context=context)
-
+        func = getattr(module, func_name)
         diagnostics[name] = {
             "requires": item["requires"],
-            "function": wrapped,
-            "long_name": item.get("long_name", ""),
-            "units": item.get("units", "")
+            "function": func,
         }
-
     return diagnostics
 
 def sort_diagnostics_by_dependencies(diagnostics):
