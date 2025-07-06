@@ -262,7 +262,7 @@ def diag_QGRAUP_p(source_dataset: str, ds: xr.Dataset) -> xr.DataArray:
     return _create_dataarray(data, ds, "QGRAUP_p", "Graupel Water Mixing Ratio", "kg kg-1")
 
 
-def diag_QWTAER_p(source_dataset: str, ds: xr.Dataset) -> xr.DataArray:
+def diag_QWATER_p(source_dataset: str, ds: xr.Dataset) -> xr.DataArray:
     """
     Total hydrometeors mixing ratio
     
@@ -271,15 +271,16 @@ def diag_QWTAER_p(source_dataset: str, ds: xr.Dataset) -> xr.DataArray:
     match source_dataset:
         
         case "ERA5":
-            data = 0
+            data = np.zeros(np.shape(ds["t"].values))
             qlist = ["clwc", "crwc", "ciwc", "cswc"]
-            for q in qlist:
-                data += (ds[q].values / (1 - ds[q].values))
-            
+
+            Qw = sum(np.squeeze(ds[q].values) for q in qlist)
+            data = Qw/(1-Qw)
+
         case "RWRF":
+            data = np.zeros(np.shape(ds["tk_p"].values))
             qlist = ["QCLOUD_p", "QRAIN_p", "QICE_p", "QSNOW_p", "QGRAUP_p"]
-            for q in qlist:
-                data += ds[q].values
+            Qw = sum(np.squeeze(ds[q].values) for q in qlist)
             
         case _:
             data = np.nan
