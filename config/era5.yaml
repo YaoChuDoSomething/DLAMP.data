@@ -1,0 +1,203 @@
+share:
+  exp_code: "E5_FANAPI"                   # EXP_CODE
+  data_path: ${DATA_PATH}                 # DATA_PATH: (AbsPath)
+  time_control:                           # Time Control =====
+    start: "2020-05-21_10:00"             # start time
+    end: "2020-05-21_10:00"               # end time
+    format: "%Y-%m-%d_%H:%M"              # the format to describe time
+    base_step_hours: 1                    # a single time step in hour 
+  io_control:                             # I/O Control =====
+    # Project Prefix: (AbsPATH)
+    base_dir: "/wk2/yaochu/CWA_Tutorial/DLAMP.data_v25.07"
+    # Output subdirectories for grib / netcdf / npy data (PATH)
+    grib_subdir: "./data/grib"        
+    netcdf_subdir: "./data/ncdb/Meiyu_2020"
+    npy_subdir: "./data/npy"
+    # Filename naming convention
+    prefix:                           
+      upper: "era5pl"                     # prefix for upper data
+      surface: "era5sl"                   # prefix for surface data
+      regrid: "e5regrid"                  # prefix dor regrid data
+      output: "e5dlamp"                   # prefix for output data
+      timestr_fmt: "%Y%m%d_%H%M"          # time string format
+
+
+# "download" section to initialize ".src.cds_downloader.CDSDataDownloader"
+download: 
+  area:                                   # Domain Control =====
+    north: 31                             # north bounds in latitudes
+    south: 17                             # south bounds in latitudes
+    west: 114                             # west bounds in longitudes
+    east: 128                             # east bounds in longitudes
+  dataset_upper:
+    title: "reanalysis-era5-pressure-levels"
+    levels: [1000, 975, 950, 925, 900,
+              875, 850, 825, 800, 775,
+              750, 700, 650, 600, 550,
+              500, 450, 400, 350, 300,
+              250, 225, 200, 175, 150,
+              125, 100,  70,  50,  30,
+               20,]
+    variables:                                 # RWRF = ERA5 * magic numbers
+      - 'geopotential'                         # z_p = z / 9.81
+      - 'temperature'                          # tk_p = t 
+      - 'u_component_of_wind'                  # umet_p = u
+      - 'v_component_of_wind'                  # vmet_p = v               
+      - 'specific_cloud_ice_water_content'     # QICE_p = ciwc/(1-ciwc)
+      - 'specific_cloud_liquid_water_content'  # QCLOUD_p = clwc/(1-clwc)
+      - 'specific_humidity'                    # QVAPOR_p = q/(1-q)
+      - 'specific_rain_water_content'          # QRAIN_p = crwc/(1-crwc)
+      - 'specific_snow_water_content'          # QSNOW_p = cswc/(1-cswc)
+      - 'divergence'
+      - 'potential_vorticity'
+      - 'vertical_velocity'                    # wa_p = w*287.05 *(t*(0.622+qvp)/(0.622*(1+qvp)))/prs/g
+      - 'vorticity'
+  dataset_surface:
+    title: "reanalysis-era5-single-levels"
+    variables:
+      - '10m_u_component_of_wind'              # umet10 = \10u
+      - '10m_v_component_of_wind'              # vmet10 = \10v
+      - '2m_dewpoint_temperature'              # td2 = \2d
+      - '2m_temperature'                       # t2 = \2t
+      - 'mean_sea_level_pressure'              # MSLP = msp
+      - 'sea_surface_temperature'              # SST = sst
+      - 'surface_pressure'                     # PSFC = sp
+      - 'total_precipitation'                  # RAINNC = tp
+      - 'boundary_layer_height'                # PBLH = blh
+      - 'skin_temperature'
+      - 'total_column_water_vapour'            # pw = tcwv
+      - 'mean_surface_downward_short_wave_radiation_flux'
+      - 'mean_top_net_long_wave_radiation_flux'
+      - 'surface_solar_radiation_downwards'    # SWDOWN
+      - 'toa_incident_solar_radiation'         # S0
+      - 'top_net_thermal_radiation'            # OLR
+
+regrid:
+  target_nc: "./assets/rwrf_out.nc"         
+  target_lat: "XLAT"
+  target_lon: "XLONG"
+  target_pres: "pres_levels"
+  source_lat: "lat"
+  source_lon: "lon"
+  source_pres: "plev"
+  levels: [1000, 975, 950, 925, 900,
+            875, 850, 825, 800, 775,
+            750, 700, 650, 600, 550,
+            500, 450, 400, 350, 300,
+            250, 225, 200, 175, 150,
+            125, 100,  70,  50,  30,
+             20,]
+  adopted_varlist: ["XLONG", "XLAT", "pres_levels", "HGT", "LANDMASK"]
+  write_regrid: False                           # save regrid data as nc or not
+
+### output netcdf design
+registry:
+  source_dataset: "ERA5"
+  varname:
+    z_p:
+      requires: ['z']
+      function: diag_z_p
+
+    tk_p:
+      requires: ['t']
+      function: diag_tk_p
+
+    umet_p:
+      requires: ['u']
+      function: diag_umet_p
+
+    vmet_p:
+      requires: ['v']
+      function: diag_vmet_p
+
+    QVAPOR_p:
+      requires: ['q']
+      function: diag_QVAPOR_p
+
+    wa_p:
+      requires: ['w', 't', 'q', 'pres_levels']
+      function: diag_wa_p
+
+    QRAIN_p:
+      requires: ['crwc']
+      function: diag_QRAIN_p
+      
+    QSNOW_p:
+      requires: ['cswc']
+      function: diag_QSNOW_p
+
+    QGRAUP_p:
+      requires: ['q']
+      function: diag_QGRAUP_p
+
+    QCLOUD_p: 
+      requires: ['clwc']
+      function: diag_QCLOUD_p
+
+    QICE_p:
+      requires: ['ciwc']
+      function: diag_QICE_p
+      
+    QWATER_p:
+      requires: ['clwc', 'crwc', 'cswc', 'ciwc']
+      function: diag_QWATER_p
+
+    T2:
+      requires: ['2t']
+      function: diag_T2
+
+    Q2:
+      requires: ['2d']
+      function: diag_Q2
+
+    rh2:
+      requires: ['2t', '2d']
+      function: diag_rh2
+
+    td2:
+      requires: ['2d']
+      function: diag_td2
+
+    umet10:
+      requires: ['10u']
+      function: diag_umet10
+
+    vmet10:
+      requires: ['10v']
+      function: diag_vmet10
+
+    slp:
+      requires: ['msl']
+      function: diag_slp
+
+    SST:
+      requires: ['sst']
+      function: diag_SST
+
+    PSFC:
+      requires: ['sp']
+      function: diag_PSFC
+
+    pw:
+      requires: ['tcwv']
+      function: diag_pw
+
+    PBLH:
+      requires: ['blh']
+      function: diag_PBLH
+
+    RAINNC:
+      requires: ['tp']
+      function: diag_RAINNC
+
+    SWDOWN:
+      requires: ['ssrd']
+      function: diag_SWDOWN
+
+    OLR:
+      requires: ['ttr']
+      function: diag_OLR
+
+    mREFL:
+      requires: ['t', 'pres_levels', 'q', 'crwc', 'cswc']
+      function: diag_mREFL
