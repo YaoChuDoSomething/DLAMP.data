@@ -8,7 +8,7 @@ micromamba env create -n [envname] -c conda-forge python=3.11 conda python-cdo p
 pip install -r requirement.txt
 ```
 
-Condition 2. Environment Setup for DLAMP.tw DLAMP.data
+Condition 2. Environment Setup for DLAMP.tw and DLAMP.data [Experimental]
 * Please install DLAMP.tw first and freeze python version in 3.11
 * install hydra-core use extra "--upgrade" after installing the requirement records by pip
 * install onnxruntime according to your CUDA version, please check onnxruntime_official for more details.
