@@ -80,7 +80,7 @@ class DataRegridder:
             self.XLONG = tgtds[self.tgtlon].values
             self.XLAT = tgtds[self.tgtlat].values
             self.static = tgtds[self.adopted_varlist]
-            #self.outds = tgtds.copy(deep=True)
+            #self.outds = tgtds.copy(deep=True, data=data_vars["XLONG", "XLAT", "pres_levels"])
 
         # diagnostics module
         self.diagnostics = load_diagnostics(yaml_path)
@@ -206,6 +206,17 @@ class DataRegridder:
                 out_dict[var] = (self.static[var].dims, static_data) # Use original dimensions
 
         nt, ny, nx = np.shape(self.XLONG)
+        out_dict["XLONG"] = (
+            ["Time", "south_north", "west_east"], 
+            np.expand_dims(np.squeeze(self.XLONG), axis=0)
+        )
+        out_dict["XLAT"] = (
+            ["Time", "south_north", "west_east"], 
+            np.expand_dims(np.squeeze(self.XLAT), axis=0)
+        )
+        out_dict["pres_levels"] = (
+            ["pres_bottom_top"], self.pres_levels
+        )
         outds = xr.Dataset(
             data_vars=out_dict,
             coords={
