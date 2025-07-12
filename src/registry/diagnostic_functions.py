@@ -273,7 +273,6 @@ def diag_QWATER_p(source_dataset: str, ds: xr.Dataset) -> xr.DataArray:
         case "ERA5":
             data = np.zeros(np.shape(ds["t"].values))
             qlist = ["clwc", "crwc", "ciwc", "cswc"]
-
             Qw = sum(np.squeeze(ds[q].values) for q in qlist)
             data = Qw/(1-Qw)
 
@@ -281,6 +280,7 @@ def diag_QWATER_p(source_dataset: str, ds: xr.Dataset) -> xr.DataArray:
             data = np.zeros(np.shape(ds["tk_p"].values))
             qlist = ["QCLOUD_p", "QRAIN_p", "QICE_p", "QSNOW_p", "QGRAUP_p"]
             Qw = sum(np.squeeze(ds[q].values) for q in qlist)
+            data = Qw
             
         case _:
             data = np.nan
