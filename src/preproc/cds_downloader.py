@@ -114,24 +114,26 @@ class CDSDataDownloader:
             f"{self.prefix['surface']}_{timestamp}.nc"
         )
 
-        
-        req = self._build_request(self.pl['title'], self.pl['variables'], curr_time, self.pl.get('levels'))
-        self.client.retrieve(self.pl['title'], req).download(pl_grb)
-        #self.invertlat_to_netcdf(input_grib=pl_grb, output_netcdf=pl_nc)
-        self.cdo.invertlat(
-            input=pl_grb,
-            options="-f nc4 --eccodes",
-            output=pl_nc,
-        )
-
-        req = self._build_request(self.sl['title'], self.sl['variables'], curr_time)
-        self.client.retrieve(self.sl['title'], req).download(sl_grb)
-        #self.invertlat_to_netcdf(input_grib=sl_grb, output_netcdf=sl_nc)
-        self.cdo.invertlat(
-            input=sl_grb,
-            options="-f nc4 --eccodes",
-            output=sl_nc,
-        )
+        if not os.path.exists(pl_grb):
+            req = self._build_request(self.pl['title'], self.pl['variables'], curr_time, self.pl.get('levels'))
+            self.client.retrieve(self.pl['title'], req).download(pl_grb)
+        if not os.path.exists(pl_nc):
+            #self.invertlat_to_netcdf(input_grib=pl_grb, output_netcdf=pl_nc)
+            self.cdo.invertlat(
+                input=pl_grb,
+                options="-f nc4 --eccodes",
+                output=pl_nc,
+            )
+        if not os.path.exists(sl_grb):
+            req = self._build_request(self.sl['title'], self.sl['variables'], curr_time)
+            self.client.retrieve(self.sl['title'], req).download(sl_grb)
+        if not os.path.exists(sl_nc):
+            #self.invertlat_to_netcdf(input_grib=sl_grb, output_netcdf=sl_nc)
+            self.cdo.invertlat(
+                input=sl_grb,
+                options="-f nc4 --eccodes",
+                output=sl_nc,
+            )
 
 # if __name__ == "__main__":
 #     config_file = "/wk2/yaochu/RESEARCH/dlamp/DLAMP.data.beta/config/era5.yaml"
