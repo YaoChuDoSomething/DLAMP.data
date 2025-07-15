@@ -5,11 +5,14 @@
 ###===== Workflow Control ===========================================###
 #
 ###==================================================================###
+from src.preproc.cds_downloader import CDSDataDownloader
+from src.preproc.dlamp_regridder import DataRegridder
 
 do_cds_downloader = 1
 do_dlamp_regridder = 1
 
 DLAMP_DATA_DIR = "./"
+yaml_config = f"{DLAMP_DATA_DIR}/config/era5.yaml"
 
 
 ###===== ERA5 Dataset Downloading ===================================###
@@ -17,16 +20,11 @@ DLAMP_DATA_DIR = "./"
 ###==================================================================###
 
 
-
-if do_cds_downloader == 1:
-    from src.preproc.cds_downloader import CDSDataDownloader
-
-    era5_config = f"{DLAMP_DATA_DIR}/config/era5.yaml"
-    downloader = CDSDataDownloader(era5_config)
-    timeline = downloader.create_timeline()
+downloader = CDSDataDownloader(yaml_config)
+timeline = downloader.create_timeline()
     
-    for curr in timeline:
-       downloader.process_download(curr)
+for curr in timeline:
+    downloader.process_download(curr)
 
 
 ###===== DataRegridder and Variables Registry =======================###
@@ -36,13 +34,11 @@ if do_cds_downloader == 1:
 #       src/registry/diagnostics_functions
 ###==================================================================###
 
-if do_dlamp_regridder == 1:
-    from src.preproc.dlamp_regridder import DataRegridder
 
-    #yaml_file = f"{DLAMP_DATA_DIR}/config/era5.yaml"
-    regridder = DataRegridder(era5_config)
-    regridder.process_single_time(curr)
+yaml_config = f"{DLAMP_DATA_DIR}/config/era5.yaml"
+regridder = DataRegridder(yaml_config)
+    #regridder.process_single_time(curr)
     
-    #regridder.main_process()
+regridder.main_process()
 
 
