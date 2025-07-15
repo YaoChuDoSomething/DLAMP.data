@@ -273,14 +273,14 @@ def diag_QWATER_p(source_dataset: str, ds: xr.Dataset) -> xr.DataArray:
         case "ERA5":
             data = np.zeros(np.shape(ds["t"].values))
             qlist = ["clwc", "crwc", "ciwc", "cswc"]
+
             Qw = sum(np.squeeze(ds[q].values) for q in qlist)
             data = Qw/(1-Qw)
 
         case "RWRF":
             data = np.zeros(np.shape(ds["tk_p"].values))
             qlist = ["QCLOUD_p", "QRAIN_p", "QICE_p", "QSNOW_p", "QGRAUP_p"]
-            Qw = sum(np.squeeze(ds[q].values) for q in qlist)
-            data = Qw
+            data = sum(np.squeeze(ds[q].values) for q in qlist)
             
         case _:
             data = np.nan
@@ -484,8 +484,10 @@ def diag_SST(source_dataset: str, ds: xr.Dataset) -> xr.DataArray:
     match source_dataset:
         
         case "ERA5":
-            data = np.squeeze(ds["sst"].values)
-            
+            sst = np.squeeze(ds["sst"].values)
+            sst[np.isnan(sst)] = np.nanmean(sst.ravel())
+            data = sst
+        
         case "RWRF":
             data = np.squeeze(ds["SST"].values)
             

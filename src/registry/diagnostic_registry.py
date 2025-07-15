@@ -5,7 +5,7 @@ def load_diagnostics(yaml_path):
     with open(yaml_path, "r") as f:
         cfg = yaml.safe_load(f)
     
-    reg_cfg = cfg["registry"].get("varname", "")
+    reg_cfg = cfg["registry"]["varname"] #.get("varname", "")
     diagnostics = {}
 
     for name, item in reg_cfg.items():
