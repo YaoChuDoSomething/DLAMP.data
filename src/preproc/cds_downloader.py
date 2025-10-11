@@ -14,11 +14,11 @@ class CDSDataDownloader:
 
         self.cfg_time = self.cfg["share"]["time_control"]
         self.start_t = datetime.strptime(
-            self.cfg_time["start"], 
+            self.cfg_time["start"],
             self.cfg_time["format"]
         )
         self.end_t = datetime.strptime(
-            self.cfg_time["end"], 
+            self.cfg_time["end"],
             self.cfg_time["format"]
         )
         self.a_timestep = timedelta(
@@ -98,15 +98,15 @@ class CDSDataDownloader:
         timestamp = curr_time.strftime(self.timestr_fmt)
 
         pl_grb = os.path.join(
-            self.grib_dir, 
+            self.grib_dir,
             f"{self.prefix['upper']}_{timestamp}.grib"
         )
         pl_nc = os.path.join(
-            self.netcdf_dir, 
+            self.netcdf_dir,
             f"{self.prefix['upper']}_{timestamp}.nc"
         )
         sl_grb = os.path.join(
-            self.grib_dir, 
+            self.grib_dir,
             f"{self.prefix['surface']}_{timestamp}.grib"
         )
         sl_nc = os.path.join(
@@ -134,8 +134,3 @@ class CDSDataDownloader:
                 options="-f nc4 --eccodes",
                 output=sl_nc,
             )
-
-# if __name__ == "__main__":
-#     config_file = "/wk2/yaochu/RESEARCH/dlamp/DLAMP.data.beta/config/era5.yaml"
-#     downloader = CDSDataDownloader(config_file)
-#     downloader.process_download()
