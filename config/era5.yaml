@@ -2,13 +2,13 @@ share:
   exp_code: "E5_FANAPI"                   # EXP_CODE
   data_path: ${DATA_PATH}                 # DATA_PATH: (AbsPath)
   time_control:                           # Time Control =====
-    start: "2024-09-30_00:00"             # start time
-    end: "2024-10-03_00:00"               # end time
+    start: "2010-09-18_00:00"             # start time
+    end: "2010-09-18_03:00"               # end time
     format: "%Y-%m-%d_%H:%M"              # the format to describe time
     base_step_hours: 1                    # a single time step in hour 
   io_control:                             # I/O Control =====
     # Project Prefix: (AbsPATH)
-    base_dir: "/wk2/yaochu/DLAMP_model/DLAMP.data/"
+    base_dir: "/wk2/yaochu/CASE_DATA/Pool/"
     # Output subdirectories for grib / netcdf / npy data (PATH)
     #
     grib_subdir: "./grib"        
@@ -139,9 +139,9 @@ registry:
       requires: ['ciwc']
       function: diag_QICE_p
       
-    QWATER_p:
+    QTOTAL_p:
       requires: ['clwc', 'crwc', 'cswc', 'ciwc']
-      function: diag_QWATER_p
+      function: diag_QTOTAL_p
 
     T2:
       requires: ['2t']
@@ -199,6 +199,10 @@ registry:
       requires: ['ttr']
       function: diag_OLR
 
-    mREFL:
+    REFL_p:
       requires: ['t', 'pres_levels', 'q', 'crwc', 'cswc']
-      function: diag_mREFL
+      function: diag_REFL_p
+
+    MAX_REFL:
+      requires: ['t', 'pres_levels', 'q', 'crwc', 'cswc']
+      function: diag_MAX_REFL

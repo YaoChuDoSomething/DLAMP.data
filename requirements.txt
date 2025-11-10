@@ -10,4 +10,5 @@ pandas
 netCDF4
 eccodes
 pyproj
+earth2studio
 

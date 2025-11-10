@@ -1,0 +1,2986 @@
+# Project Overview: dlampDATA
+
+---
+
+## Configuration
+- Project Root: `/wk2/yaochu/dev2511/dlampDATA`
+- Output Path: `/wk2/yaochu/dev2511/txt2llm/output/dlampDATA/dlampDATA_overview_20251025_220541.txt`
+- Ignored Directories: `.git, .venv, __pycache__, output`
+- Included Extensions: `.bat, .c, .cfg, .cpp, .go, .h, .ini, .java, .js, .json, .md, .py, .rs, .rst, .sh, .toml, .ts, .txt, .yaml, .yml`
+
+---
+
+## Directory Tree
+
+```
+dlampDATA/
+├── assets/
+│   ├── search_keyword.sh
+│   ├── target.nc
+│   └── validate_vars.py
+├── config/
+│   ├── diag/
+│   ├── regrid/
+│   ├── .gfs.yaml.swp
+│   ├── cds.yaml
+│   ├── dataDownloader.yaml
+│   ├── era5.yaml
+│   ├── gfs.yaml
+│   └── sfno.yaml
+├── src/
+│   ├── global/
+│   ├── preproc/
+│   │   ├── cds_downloader.py
+│   │   └── dlamp_regridder.py
+│   ├── registry/
+│   │   ├── diagnostic_functions.py
+│   │   └── diagnostic_registry.py
+│   ├── workflow/
+│   │   └── global_op.py
+│   └── workflows/
+│       ├── data_processing.py
+│       └── sfno_forecast.py
+├── .gitignore
+├── .python-version
+├── DLAMPreproc.py
+├── earth2studio_plan.md
+├── GEMINI.md
+├── LICENSE
+├── main.py
+├── pyproject.toml
+├── README.md
+├── requirements.txt
+└── uv.lock
+```
+
+## File Contents
+
+### `DLAMPreproc.py`
+
+```python
+#!/bin/python
+
+#!/bin/python
+
+###===== Workflow Control ===========================================###
+#
+###==================================================================###
+from src.preproc.cds_downloader import CDSDataDownloader
+from src.preproc.dlamp_regridder import DataRegridder
+
+do_cds_downloader = 1
+do_dlamp_regridder = 1
+
+DLAMP_DATA_DIR = "./"
+yaml_config = f"{DLAMP_DATA_DIR}/config/era5.yaml"
+
+
+###===== ERA5 Dataset Downloading ===================================###
+#   Downloading process is fully controled by YAML configure file
+###==================================================================###
+
+
+downloader = CDSDataDownloader(yaml_config)
+timeline = downloader.create_timeline()
+    
+for curr in timeline:
+    downloader.process_download(curr)
+
+
+###===== DataRegridder and Variables Registry =======================###
+#   Data Regridding can be controled by YAML configure file
+#   Variables Registry can be controled by YAML configure file
+#   Variables Diagnostics can be controled by module script:
+#       src/registry/diagnostics_functions
+###==================================================================###
+
+
+yaml_config = f"{DLAMP_DATA_DIR}/config/era5.yaml"
+regridder = DataRegridder(yaml_config)
+    #regridder.process_single_time(curr)
+    
+regridder.main_process()
+
+
+
+```
+
+### `GEMINI.md`
+
+```markdown
+### **System Prompt: Earth2Studio Code Review Expert**
+
+#### **Role and Professional Competencies**
+
+* **Role Definition:** You are a **Senior Developer** highly **proficient in the Earth2Studio module**.
+* **Core Responsibilities:**
+    1. Conduct a **meticulous review** of all weather-related code.
+    2. Offer expert, professional advice on utilizing the **Earth2Studio API**.
+    3. Maintain **high vigilance** when reviewing documentation to identify and flag any **"non-existent" (fabricated)** or misleading text/information attempting to misrepresent the source.
+* **Output Requirements:**
+    1. The final output **must be a complete, runnable code script**.
+    2. All **comments and docstrings** within the code must be **written entirely in English**.
+    3. **Chinese explanations** of the code logic are to be provided in a **separate paragraph outside the main code block**.
+    4. The final response **must include the complete code script**.
+
+---
+
+#### **Behavior and Coding Standards**
+
+* **Output Method:** Use the **`logging`** library for all message output; **`print` is prohibited**.
+* **API Usage Guidelines:**
+    * **Always** use **Google Search** to verify the usage of any unclear parameters. **Assumptions are strictly prohibited.**
+    * Whenever an `earth2studio` library API is called, you **must first write the complete API call with full type annotations**.
+* **Critical Component Verification (Logging Augmentation):**
+    * **Target Libraries for Scrutiny:** Focus on modules frequently misused, specifically: `earth2studio.models`, `earth2studio.data`, and `earth2studio.utils`.
+    * **Verification Trigger:** If a code line or block contains an object from the **Target Libraries for Scrutiny**, the `logging` statement for that code must be **augmented**.
+    * **Augmented Logging Format:** The standard log message must be followed by a clear, dedicated alert.
+    * **Example Augmentation Message (in logging output):** "🚨 **USAGE ALERT**: Verify the function name, parameter order, and expected input/output format for this module. Refer to the official Earth2Studio documentation."
+    * **AI Self-Correction Mandate:** When generating code that uses a target library object, the AI must internally verify the usage against its knowledge base and, if necessary, perform a **Google Search** to confirm the correctness of the API call before logging the augmented message.
+* **Date and Time Handling:**
+    * **Never** use the `pd` or **Pandas** libraries for date/time manipulation.
+    * Use **`np.datetime64`**, the built-in **`datetime`** module, or standard **string literals** for all date and time operations.
+* **File Naming Convention:**
+    * **Format:** `PREFIX_TIMESTAMP.SUFFIX`
+    * **Connector:** `_`
+    * **Timestamp Format:** **`%Y%m%d_%H%M`**
+    * **Example:** `filename=f"{PREFIX}_{TIMESTAMP.strftime('%Y%m%d_%H%M')}.nc"`
+* **Placeholder Usage:**
+    * If any placeholders are required, **you must explicitly ask the user 
+```
+
+### `README.md`
+
+```markdown
+# DLAMP.data
+
+Streamlining Your Data-Driven Workflow: Pre-processing and Post-processing Utilities for DLAMP.tw Model.
+
+This repository provides a suite of tools for pre-processing and post-processing data for the DLAMP.tw model. It includes functionalities for downloading data from the Climate Data Store (CDS), regridding data to a target domain, and calculating a wide range of diagnostic variables.
+
+## How to install the python environment
+
+### Condition 1. Simple Environment Setup for DLAMP.data
+
+```bash
+micromamba env create -n [envname] -c conda-forge python=3.11 conda python-cdo python-eccodes
+pip install -r requirements.txt
+```
+
+### Condition 2. Environment Setup for DLAMP.tw and DLAMP.data [Experimental]
+
+*   Please install DLAMP.tw first and freeze python version in 3.11
+*   install hydra-core use extra "--upgrade" after installing the requirement records by pip
+*   install onnxruntime according to your CUDA version, please check onnxruntime_official for more details.
+
+```bash
+micromamba env create -n [envname] -c conda-forge python=3.11 conda
+
+git clone https://github.com/NVIDIA/physicsnemo && cd physicsnemo
+make install && cd ..
+
+git clone https://github.com/Chia-Tung/DLAMP DLAMP.tw && cd DLAMP.tw
+pip install -r requirements.txt && \
+pip install hydra-core --upgrade && \
+pip install onnxruntime-gpu==1.20.0 && cd ..
+
+git clone https://github.com/YaoChuDoSomething/DLAMP.data DLAMP.data && cd DLAMP.data
+pip install -r requirement.txt
+```
+
+## How to Run the Workflow
+
+The main entry point for the data processing workflow is `dlamp_prep.py`. You can control which parts of the workflow are executed by editing this file:
+
+```python
+###===== Workflow Control ===========================================###
+#
+###==================================================================###
+from src.preproc.cds_downloader import CDSDataDownloader
+from src.preproc.dlamp_regridder import DataRegridder
+
+do_cds_downloader = 1  # Set to 1 to run the downloader, 0 to skip
+do_dlamp_regridder = 1 # Set to 1 to run the regridder and diagnostics, 0 to skip
+
+DLAMP_DATA_DIR = "./"
+yaml_config = f"{DLAMP_DATA_DIR}/config/era5.yaml"
+```
+
+To run the workflow, simply execute the script:
+
+```bash
+python dlamp_prep.py
+```
+
+## Configuration
+
+The entire workflow is controlled by YAML configuration files located in the `config/` directory. The main configuration file is `config/era5.yaml`.
+
+### Controlling the Interpolation Mechanism
+
+The interpolation (regridding) process is configured in the `regrid` section of `config/era5.yaml`.
+
+```yaml
+regrid:
+  target_nc: "./assets/target.nc"         # Path to the NetCDF file defining the target grid
+  target_lat: "XLAT"                      # Latitude variable name in the target file
+  target_lon: "XLONG"                     # Longitude variable name in the target file
+  target_pres: "pres_levels"              # Pressure level variable name in the target file
+  source_lat: "lat"                       # Latitude variable name in the source data
+  source_lon: "lon"                       # Longitude variable name in the source data
+  source_pres: "plev"                     # Pressure level variable name in the source data
+  levels: [1000, 975, ..., 20]            # List of pressure levels for vertical interpolation
+  adopted_varlist: ["XLONG", "XLAT", "pres_levels", "HGT", "LANDMASK"] # Static variables to copy from target
+  write_regrid: False                     # Set to True to save the intermediate regridded file
+```
+
+The system uses `scipy.interpolate.griddata` with a `"linear"` method for horizontal interpolation. You can modify the `src/preproc/dlamp_regridder.py` file, specifically the `interp_horizontal` method, to change the interpolation algorithm if needed.
+
+### Controlling the Diagnostic Mechanism
+
+The diagnostic variable calculation is controlled by the `registry` section in `config/era5.yaml`.
+
+To **enable or disable** a diagnostic variable, simply **add or remove** its entry from this section.
+
+```yaml
+registry:
+  source_dataset: "ERA5"
+  varname:
+    z_p:
+      requires: ['z']
+      function: diag_z_p
+
+    tk_p:
+      requires: ['t']
+      function: diag_tk_p
+
+    # ... other variables
+```
+
+-   `source_dataset`: Specifies the source of the data (e.g., "ERA5"). This is used by the diagnostic functions to apply the correct transformations.
+-   `varname`: This is the dictionary containing all the diagnostic variables to be calculated.
+-   Each entry under `varname` (e.g., `z_p`, `tk_p`) defines a diagnostic variable.
+    -   `requires`: A list of source variables needed to calculate this diagnostic. The system will ensure these are available from the regridded data.
+    -   `function`: The name of the Python function in `src/registry/diagnostic_functions.py` that performs the calculation.
+
+### How to Add a New Diagnostic Variable and Method
+
+Adding a new diagnostic variable is a three-step process:
+
+**Step 1: Define the new variable in the configuration file.**
+
+Open `config/era5.yaml` and add a new entry under `registry.varname`. For example, to add a new variable `my_new_var` that requires temperature (`t`) and surface pressure (`sp`):
+
+```yaml
+# in config/era5.yaml
+registry:
+  varname:
+    # ... existing variables
+    my_new_var:
+      requires: ['t', 'sp']
+      function: diag_my_new_var
+```
+
+**Step 2: Implement the calculation function.**
+
+Open `src/registry/diagnostic_functions.py` and add a new Python function with the name you specified (`diag_my_new_var`). The function must accept `source_dataset` (a string) and `ds` (an `xarray.Dataset`) as arguments and return an `xarray.DataArray`.
+
+```python
+# in src/registry/diagnostic_functions.py
+
+def diag_my_new_var(source_dataset: str, ds: xr.Dataset) -> xr.DataArray:
+    """
+    Calculates my new variable.
+    """
+    # Example calculation
+    temp = np.squeeze(ds["t"].values)
+    sfc_pressure = np.squeeze(ds["sp"].values)
+
+    # Perform your calculation
+    data = temp * np.log(sfc_pressure)
+
+    # Use the helper function to create a well-formed DataArray
+    return _create_dataarray(
+        data, ds, "my_new_var", "My New Diagnostic Variable", "units"
+    )
+```
+
+**Step 3: The function is automatically registered.**
+
+There is no need for a manual registration step. The system uses `importlib` to dynamically load the function specified in the YAML configuration from the `src.registry.diagnostic_functions` module.
+
+### How the Mechanism Controls the Order of Diagnostics
+
+The execution order of the diagnostic calculations is **not** determined by the order in `config/era5.yaml`. Instead, the system automatically determines the correct order based on the dependencies specified in the `requires` list for each variable.
+
+The `src/registry/diagnostic_registry.py` file contains the `sort_diagnostics_by_dependencies` function. This function builds a dependency graph from the `requires` list of all variables and performs a topological sort. This ensures that if a diagnostic variable `B` requires the output of another diagnostic variable `A`, variable `A` will always be calculated before variable `B`.
+
+This allows you to define variables in any order in the configuration file, and the system will intelligently execute them in the correct sequence.
+
+```
+
+### `assets/search_keyword.sh`
+
+```shell
+#!/bin/bash
+
+
+keyword=$1
+
+if [ -z "${keyword}" ]; then
+
+        echo "Usage: bash $0 [KEYWORD]"
+
+else
+
+        mapfile -t flist < <(find . -type f \( -name "*.py" -o -name "*.yaml" \) -a \! -name "*.npy" -a \! -name "*__*")
+
+        for fn in "${flist[@]}"; do
+
+                to_list=$(grep -l "${keyword}" "${fn}" | wc -l)
+
+                if [ "$to_list" -ne "0" ]; then
+
+                        echo "=========================================
+                        "
+
+                        grep -n "${keyword}" $fn
+
+                        echo "
+                        === === ===
+                        "
+
+                fi
+
+        done
+
+fi
+
+```
+
+### `assets/validate_vars.py`
+
+```python
+import os
+import sys
+os.system('clear')
+
+import numpy as np
+import xarray as xr
+import matplotlib.pyplot as plt
+import matplotlib.gridspec as gridspec
+from datetime import datetime, timedelta
+from scipy.interpolate import griddata, RegularGridInterpolator
+
+era5s_dataf = "../ncdb/Pool/era5sl_20220911_0000.nc"
+rwrf_dataf = "/wk2/data/2020/20200520/0000/wrfinput_d01_2020-05-20_00_interp"
+dlamp_dataf = "../ncdb/Pool/e5dlamp_20220911_0000.nc"
+
+
+with xr.open_dataset(era5s_dataf, engine="netcdf4") as e5ds:
+    lon = np.squeeze(e5ds["lon"].values)
+    lat = np.squeeze(e5ds["lat"].values)
+    
+    elon, elat = np.meshgrid(lon, lat)
+    e5sst = np.squeeze(e5ds["sst"].values)
+    e5sst[np.isnan(e5sst)] = np.nanmean(e5sst.ravel())
+    
+    
+    #land_mask = ~np.isnan(e5sst)
+    #known_points = np.array([elon[land_mask], elat[land_mask]]).T
+    #known_values = sst_data_with_nan[valid_mask]
+    #mean_sst = np.nanmean(e5sst.ravel())
+
+
+ 
+
+with xr.open_dataset(rwrf_dataf, engine="netcdf4") as rwfds:
+    XLON = np.squeeze(rwfds["XLONG"].values)
+    XLAT = np.squeeze(rwfds["XLAT"].values)
+    SST_0 = np.squeeze(rwfds["SST"].values)
+    T2_0 = np.squeeze(rwfds["T2"].values)
+    dT_0 = T2_0 - SST_0
+
+with xr.open_dataset(dlamp_dataf, engine="netcdf4") as ncds:
+    XLON = np.squeeze(ncds["XLONG"].values)
+    XLAT = np.squeeze(ncds["XLAT"].values)
+    SST = np.squeeze(ncds["SST"].values)
+    mask = np.isnan(SST) * 1.
+    
+    T2 = np.squeeze(ncds["T2"].values)
+    dT = SST - T2
+    
+    
+
+points = list(zip(elon.ravel(), elat.ravel()))
+
+SST_1 = griddata(
+    points, e5sst.ravel(), (XLON, XLAT), 
+    method="linear",
+)
+SST_2 = griddata(
+    points, e5sst.ravel(), (XLON, XLAT),
+    method="cubic",
+)
+SST_3 = griddata(
+    points, e5sst.ravel(), (XLON, XLAT), 
+    method="linear", fill_value=0,
+)
+
+
+fig = plt.figure(figsize=[12, 8])
+gs  = gridspec.GridSpec(2, 3, figure=fig)
+ax1 = fig.add_subplot(gs[0, 0])
+ax2 = fig.add_subplot(gs[0, 1])
+ax3 = fig.add_subplot(gs[0, 2])
+ax4 = fig.add_subplot(gs[1, 0])
+ax5 = fig.add_subplot(gs[1, 1])
+ax6 = fig.add_subplot(gs[1, 2])
+ax_dict = {
+    'ax1': ax1, 'ax2': ax2, 'ax3': ax3, 
+    'ax4': ax4, 'ax5': ax5, 'ax6': ax6,
+}
+
+img1 = ax1.pcolormesh(SST_0)
+ax1.set_title("SST")
+img2 = ax2.pcolormesh(T2_0)
+ax2.set_title("T2")
+img3 = ax3.pcolormesh(dT_0)
+ax3.set_title("SST - T2")
+img4 = ax4.pcolormesh(e5sst)
+ax4.set_title("era5 SST")
+img5 = ax5.pcolormesh(SST_3)
+ax5.set_title("era5 SST with mean SST Mask")
+#img6 = ax6.pcolormesh(e5sst_n)
+#ax6.set_title("era5 new SST")
+
+
+```
+
+### `config/cds.yaml`
+
+```yaml
+
+```
+
+### `config/dataDownloader.yaml`
+
+```yaml
+
+setup_time:                             # Time Control =====
+  start: "2010-09-18_00:00"             # start time
+  end: "2010-09-20_00:00"               # end time
+  format: "%Y-%m-%d_%H:%M"              # the format to describe the start and end
+  base_step_hr: 1                       # the fundamental, single time step in units hour 
+
+output:                                 # I/O Control =====
+  grib: "./grib_archive"                # output directory for grib data 
+  netcdf: "./ncdb"                      # output directory for netcdf data
+  prefix:                               # Filename naming convention
+    pres_lev: "era5pl"                  # prefix for upper data
+    sing_lev: "era5sl"                  # prefix for surface data
+    combine: "e5dlamp"                  # prefix for combined data
+    timestr_fmt: "%Y%m%d_%H%M"          # time string format
+
+area:                                   # Domain Control =====
+  north: 31                             # north bounds in latitudes
+  south: 17                             # south bounds in latitudes
+  west: 114                             # west bounds in longitudes
+  east: 128                             # east bounds in longitudes
+
+dataset_upper:
+  title: "reanalysis-era5-pressure-levels"
+  levels: [1000, 975, 950, 925, 900,
+            875, 850, 825, 800, 775,
+            750, 700, 650, 600, 550,
+            500, 450, 400, 350, 300,
+            250, 225, 200, 175, 150,
+            125, 100,  70,  50,  30,
+            20]
+  variables:                                 # RWRF = ERA5 * magic numbers
+    - 'geopotential'                         # z_p = z / 9.81
+    - 'temperature'                          # tk_p = t 
+    - 'u_component_of_wind'                  # umet_p = u
+    - 'v_component_of_wind'                  # vmet_p = v               
+    - 'specific_cloud_ice_water_content'     # QICE_p = ciwc/(1-ciwc)
+    - 'specific_cloud_liquid_water_content'  # QCLOUD_p = clwc/(1-clwc)
+    - 'specific_humidity'                    # QVAPOR_p = q/(1-q)
+    - 'specific_rain_water_content'          # QRAIN_p = crwc/(1-crwc)
+    - 'specific_snow_water_content'          # QSNOW_p = cswc/(1-cswc)
+    - 'divergence'
+    - 'potential_vorticity'
+    - 'vertical_velocity'                    # wa_p = w*287.05 *(t*(0.622+qvp)/(0.622*(1+qvp)))/prs/g
+    - 'vorticity'
+
+dataset_surface:
+  title: "reanalysis-era5-single-levels"
+  variables:
+    - '10m_u_component_of_wind'              # umet10 = \10u
+    - '10m_v_component_of_wind'              # vmet10 = \10v
+    - '2m_dewpoint_temperature'              # td2 = \2d
+    - '2m_temperature'                       # t2 = \2t
+    - 'mean_sea_level_pressure'              # MSLP = msp
+    - 'sea_surface_temperature'              # SST = sst
+    - 'surface_pressure'                     # PSFC = sp
+    - 'total_precipitation'                  # RAINNC = tp
+    - 'boundary_layer_height'                # PBLH = blh
+    - 'skin_temperature'
+    - 'total_column_water_vapour'            # pw = tcwv
+    - 'surface_solar_radiation_downwards'    # SWDOWN
+    - 'toa_incident_solar_radiation'         # S0
+    - 'top_net_thermal_radiation'            # OLR
+
+```
+
+### `config/era5.yaml`
+
+```yaml
+share:
+  exp_code: "E5_FANAPI"                   # EXP_CODE
+  data_path: ${DATA_PATH}                 # DATA_PATH: (AbsPath)
+  time_control:                           # Time Control =====
+    start: "2024-09-30_00:00"             # start time
+    end: "2024-10-03_00:00"               # end time
+    format: "%Y-%m-%d_%H:%M"              # the format to describe time
+    base_step_hours: 1                    # a single time step in hour 
+  io_control:                             # I/O Control =====
+    # Project Prefix: (AbsPATH)
+    base_dir: "/wk2/yaochu/DLAMP_model/DLAMP.data/"
+    # Output subdirectories for grib / netcdf / npy data (PATH)
+    #
+    grib_subdir: "./grib"        
+    netcdf_subdir: "./ncdb/Pool"
+    npy_subdir: "./npy"
+    # Filename naming convention
+    prefix:                           
+      upper: "era5pl"                     # prefix for upper data
+      surface: "era5sl"                   # prefix for surface data
+      regrid: "e5regrid"                  # prefix dor regrid data
+      output: "e5dlamp"                   # prefix for output data
+      timestr_fmt: "%Y%m%d_%H%M"          # time string format
+
+
+# "download" section to initialize ".src.cds_downloader.CDSDataDownloader"
+download: 
+  area:                                   # Domain Control =====
+    north: 31                             # north bounds in latitudes
+    south: 17                             # south bounds in latitudes
+    west: 114                             # west bounds in longitudes
+    east: 128                             # east bounds in longitudes
+  dataset_upper:
+    title: "reanalysis-era5-pressure-levels"
+    levels: [1000, 975, 950, 925, 900,
+              875, 850, 825, 800, 775,
+              750, 700, 650, 600, 550,
+              500, 450, 400, 350, 300,
+              250, 225, 200, 175, 150,
+              125, 100,  70,  50,  30,
+               20,]
+    variables:                                 # RWRF = ERA5 * magic numbers
+      - 'geopotential'                         # z_p = z / 9.81
+      - 'temperature'                          # tk_p = t 
+      - 'u_component_of_wind'                  # umet_p = u
+      - 'v_component_of_wind'                  # vmet_p = v               
+      - 'specific_cloud_ice_water_content'     # QICE_p = ciwc/(1-ciwc)
+      - 'specific_cloud_liquid_water_content'  # QCLOUD_p = clwc/(1-clwc)
+      - 'specific_humidity'                    # QVAPOR_p = q/(1-q)
+      - 'specific_rain_water_content'          # QRAIN_p = crwc/(1-crwc)
+      - 'specific_snow_water_content'          # QSNOW_p = cswc/(1-cswc)
+      - 'divergence'
+      - 'potential_vorticity'
+      - 'vertical_velocity'                    # wa_p = w*287.05 *(t*(0.622+qvp)/(0.622*(1+qvp)))/prs/g
+      - 'vorticity'
+  dataset_surface:
+    title: "reanalysis-era5-single-levels"
+    variables:
+      - '10m_u_component_of_wind'              # umet10 = \10u
+      - '10m_v_component_of_wind'              # vmet10 = \10v
+      - '2m_dewpoint_temperature'              # td2 = \2d
+      - '2m_temperature'                       # t2 = \2t
+      - 'mean_sea_level_pressure'              # MSLP = msp
+      - 'sea_surface_temperature'              # SST = sst
+      - 'surface_pressure'                     # PSFC = sp
+      - 'total_precipitation'                  # RAINNC = tp
+      - 'boundary_layer_height'                # PBLH = blh
+      - 'skin_temperature'
+      - 'total_column_water_vapour'            # pw = tcwv
+      - 'mean_surface_downward_short_wave_radiation_flux'
+      - 'mean_top_net_long_wave_radiation_flux'
+      - 'surface_solar_radiation_downwards'    # SWDOWN
+      - 'toa_incident_solar_radiation'         # S0
+      - 'top_net_thermal_radiation'            # OLR
+
+regrid:
+  target_nc: "./assets/target.nc"         
+  target_lat: "XLAT"
+  target_lon: "XLONG"
+  target_pres: "pres_levels"
+  source_lat: "lat"
+  source_lon: "lon"
+  source_pres: "plev"
+  levels: [1000, 975, 950, 925, 900,
+            875, 850, 825, 800, 775,
+            750, 700, 650, 600, 550,
+            500, 450, 400, 350, 300,
+            250, 225, 200, 175, 150,
+            125, 100,  70,  50,  30,
+             20,]
+  adopted_varlist: ["XLONG", "XLAT", "pres_levels", "HGT", "LANDMASK"]
+  write_regrid: False                           # save regrid data as nc or not
+
+### output netcdf design
+registry:
+  source_dataset: "ERA5"
+  varname:
+    z_p:
+      requires: ['z']
+      function: diag_z_p
+
+    tk_p:
+      requires: ['t']
+      function: diag_tk_p
+
+    umet_p:
+      requires: ['u']
+      function: diag_umet_p
+
+    vmet_p:
+      requires: ['v']
+      function: diag_vmet_p
+
+    QVAPOR_p:
+      requires: ['q']
+      function: diag_QVAPOR_p
+
+    wa_p:
+      requires: ['w', 't', 'q', 'pres_levels']
+      function: diag_wa_p
+
+    QRAIN_p:
+      requires: ['crwc']
+      function: diag_QRAIN_p
+      
+    QSNOW_p:
+      requires: ['cswc']
+      function: diag_QSNOW_p
+
+    QGRAUP_p:
+      requires: ['q']
+      function: diag_QGRAUP_p
+
+    QCLOUD_p: 
+      requires: ['clwc']
+      function: diag_QCLOUD_p
+
+    QICE_p:
+      requires: ['ciwc']
+      function: diag_QICE_p
+      
+    QWATER_p:
+      requires: ['clwc', 'crwc', 'cswc', 'ciwc']
+      function: diag_QWATER_p
+
+    T2:
+      requires: ['2t']
+      function: diag_T2
+
+    Q2:
+      requires: ['2d']
+      function: diag_Q2
+
+    rh2:
+      requires: ['2t', '2d']
+      function: diag_rh2
+
+    td2:
+      requires: ['2d']
+      function: diag_td2
+
+    umet10:
+      requires: ['10u']
+      function: diag_umet10
+
+    vmet10:
+      requires: ['10v']
+      function: diag_vmet10
+
+    slp:
+      requires: ['msl']
+      function: diag_slp
+
+    SST:
+      requires: ['sst']
+      function: diag_SST
+
+    PSFC:
+      requires: ['sp']
+      function: diag_PSFC
+
+    pw:
+      requires: ['tcwv']
+      function: diag_pw
+
+    PBLH:
+      requires: ['blh']
+      function: diag_PBLH
+
+    RAINNC:
+      requires: ['tp']
+      function: diag_RAINNC
+
+    SWDOWN:
+      requires: ['ssrd']
+      function: diag_SWDOWN
+
+    OLR:
+      requires: ['ttr']
+      function: diag_OLR
+
+    mREFL:
+      requires: ['t', 'pres_levels', 'q', 'crwc', 'cswc']
+      function: diag_mREFL
+
+```
+
+### `config/gfs.yaml`
+
+```yaml
+# Configuration for GFS data ingestion
+share:
+  exp_code: "GFS_Ingest"
+  data_path: ${DATA_PATH}
+  time_control:
+    start: "2024-09-30_00:00"
+    end: "2024-09-30_00:00"
+    format: "%Y-%m-%d_%H:%M"
+    base_step_hours: 6
+  io_control:
+    base_dir: "/wk2/yaochu/DLAMP_model/DLAMP.data/"
+    netcdf_subdir: "./ncdb/Pool"
+    prefix:
+      output: "gfs_rw"
+      timestr_fmt: "%Y%m%d_%H%M"
+
+data_source:
+  name: "gfs"
+  source: "aws"
+  cache: true
+  variables:
+    - "u10m"
+    - "v10m"
+    - "u100m"
+    - "v100m"
+    - "t2m"
+    - "sp"
+    - "msl"
+    - "tcwv"
+    - "u50"
+    - "u100"
+    - "u150"
+    - "u200"
+    - "u250"
+    - "u300"
+    - "u400"
+    - "u500"
+    - "u600"
+    - "u700"
+    - "u850"
+    - "u925"
+    - "u1000"
+    - "v50"
+    - "v100"
+    - "v150"
+    - "v200"
+    - "v250"
+    - "v300"
+    - "v400"
+    - "v500"
+    - "v600"
+    - "v700"
+    - "v850"
+    - "v925"
+    - "v1000"
+    - "t50"
+    - "t100"
+    - "t150"
+    - "t200"
+    - "t250"
+    - "t300"
+    - "t400"
+    - "t500"
+    - "t600"
+    - "t700"
+    - "t850"
+    - "t925"
+    - "t1000"
+    - "z50"
+    - "z100"
+    - "z150"
+    - "z200"
+    - "z250"
+    - "z300"
+    - "z400"
+    - "z500"
+    - "z600"
+    - "z700"
+    - "z850"
+    - "z925"
+    - "z1000"
+    - "q50"
+    - "q100"
+    - "q150"
+    - "q200"
+    - "q250"
+    - "q300"
+    - "q400"
+    - "q500"
+    - "q600"
+    - "q700"
+    - "q850"
+    - "q925"
+    - "q1000"
+  # earth2studio.data.GFS arguments will go here
+  # For example:
+  # resolution: "0.25" 
+  # variables: [...]
+
+regrid:
+  target_nc: "./assets/target.nc"
+  target_lat: "XLAT"
+  target_lon: "XLONG"
+  # GFS data might have different source coordinate names
+  source_lat: "lat" 
+  source_lon: "lon"
+
+registry:
+  source_dataset: "GFS"
+  varname: {}
+  # No variables defined yet, this will be filled in later.
+
+```
+
+### `config/sfno.yaml`
+
+```yaml
+# Configuration for SFNO model forecast
+share:
+  exp_code: "SFNO_GFS_Forecast"
+  time_control:
+    start: "2024-09-30_00:00"
+    format: "%Y-%m-%d_%H:%M"
+    forecast_steps: 20 # Number of 6-hour steps
+    forecast_step_hours: 6
+  io_control:
+    base_dir: "/wk2/yaochu/DLAMP_model/DLAMP.data/"
+    netcdf_subdir: "./ncdb/sfno_forecast"
+    prefix:
+      output: "sfno_rw"
+      timestr_fmt: "%Y%m%d_%H%M"
+
+initial_condition:
+  # Configuration for fetching the initial state for the forecast
+  # This will point to a GFS ingestion config or have its own data source definition
+  config: "config/gfs.yaml"
+
+model:
+  name: "sfno"
+  # earth2studio.models.sfno.SFNO arguments
+  # For example:
+  # model_name: "sfno_73ch"
+  input_variables:
+    # List of the 73 channel variables required by SFNO
+    # This list will be used to transform the initial condition dataset
+    # into the required DataArray format.
+    - "u10m"
+    - "v10m"
+    - "u100m"
+    - "v100m"
+    - "t2m"
+    - "sp"
+    - "msl"
+    - "tcwv"
+    - "u50"
+    - "u100"
+    - "u150"
+    - "u200"
+    - "u250"
+    - "u300"
+    - "u400"
+    - "u500"
+    - "u600"
+    - "u700"
+    - "u850"
+    - "u925"
+    - "u1000"
+    - "v50"
+    - "v100"
+    - "v150"
+    - "v200"
+    - "v250"
+    - "v300"
+    - "v400"
+    - "v500"
+    - "v600"
+    - "v700"
+    - "v850"
+    - "v925"
+    - "v1000"
+    - "t50"
+    - "t100"
+    - "t150"
+    - "t200"
+    - "t250"
+    - "t300"
+    - "t400"
+    - "t500"
+    - "t600"
+    - "t700"
+    - "t850"
+    - "t925"
+    - "t1000"
+    - "z50"
+    - "z100"
+    - "z150"
+    - "z200"
+    - "z250"
+    - "z300"
+    - "z400"
+    - "z500"
+    - "z600"
+    - "z700"
+    - "z850"
+    - "z925"
+    - "z1000"
+    - "q50"
+    - "q100"
+    - "q150"
+    - "q200"
+    - "q250"
+    - "q300"
+    - "q400"
+    - "q500"
+    - "q600"
+    - "q700"
+    - "q850"
+    - "q925"
+    - "q1000"
+
+regrid:
+  # Regridding settings for the model output before diagnostics
+  target_nc: "./assets/target.nc"
+  target_lat: "XLAT"
+  target_lon: "XLONG"
+
+registry:
+  # Defines how to convert the model's output variables into RWRF format
+  source_dataset: "SFNO"
+  # Variable mappings...
+
+```
+
+### `earth2studio_plan.md`
+
+```markdown
+# Earth2Studio-Based Workflow Integration Plan
+
+## 1.0 Overall Objective
+
+To refactor the existing data processing pipeline (`DLAMPreproc.py`) and introduce new forecasting capabilities by leveraging the `earth2studio` library. This plan outlines three core tasks:
+1.  **Task 1:** A unified data ingestion workflow to process initial conditions from both CDS (ERA5) and GFS, and convert them into RWRF format.
+2.  **Task 2:** A one-way forecasting workflow where the SFNO model is initialized with GFS data to produce a forecast, which is then converted to RWRF format.
+3.  **Task 3 (Tentative):** A two-way coupled workflow where the SFNO global forecast is updated at each time step with data from a high-resolution regional model.
+
+This refactoring aims to create a modular, configurable, and extensible system for weather data processing and forecasting, while adhering to strict project structure and data handling conventions.
+
+## 2.0 Project Structure & Conventions
+
+To maintain consistency and modularity, the project will adhere to the following structure and conventions:
+
+1.  **Entry Point:** A single entry script, `main.py`, will be located in the project root. This script will act as a controller, parsing arguments to select and execute the desired workflow (e.g., data processing, SFNO forecast).
+2.  **Configuration:** All configuration files will be located in the `config/` directory. New YAML files, such as `config/gfs.yaml` and `config/sfno.yaml`, will be created to manage parameters for their respective workflows.
+3.  **Code Organization:** All new Python source code, excluding the main entry point, will be placed within the `src/` directory. A new subdirectory, `src/workflows/`, will be created to house the logic for the different tasks.
+4.  **Data Structure:** Workflows will primarily use `xarray.Dataset` for handling meteorological data. For interaction with `earth2studio` models like SFNO that expect a "channel" or "variable" dimension, the data will be transformed into an `xarray.DataArray` with coordinates like `("variable", "lat", "lon")` or `("variable", "south_north", "west_east")` as required.
+5.  **Code Modification Constraints:**
+    -   **Forbidden:** No modifications will be made to files within `src/preproc/` or to `src/registry/diagnostic_registry.py`.
+    -   **Allowed:** New diagnostic functions can be added to `src/registry/diagnostic_functions.py` to support new variables or data sources.
+
+## 3.0 Task 1: Data Ingestion and RWRF Conversion (CDS & GFS)
+
+### 3.1 Objective
+Create a robust and unified workflow that can fetch data from different sources (initially CDS/ERA5 and GFS), perform necessary interpolations, and convert it to the RWRF format using the existing diagnostic tools.
+
+### 3.2 Workflow Steps
+1.  **Configuration Loading:** The workflow will be initiated by loading a source-specific configuration file (e.g., `config/era5.yaml` or `config/gfs.yaml`).
+2.  **Data Acquisition:**
+    -   For ERA5 data, `earth2studio.data.CDS` will be used.
+    -   For GFS data, `earth2studio.data.GFS` will be used.
+    -   The data will be fetched directly as `xarray` objects, eliminating the need for intermediate GRIB/NetCDF files.
+3.  **Regridding:** The fetched data, regardless of its source grid, will be horizontally interpolated to the target RWRF grid defined in `assets/target.nc`. The output coordinates will be `("south_north", "west_east")`.
+4.  **Diagnostics and Formatting:** The regridded `xarray.Dataset` will be passed to the existing diagnostic system. The functions in `src/registry/diagnostic_functions.py` (called in the correct order determined by `sort_diagnostics_by_dependencies`) will calculate the required RWRF variables.
+5.  **Output:** The final `xarray.Dataset`, now in RWRF format, will be saved as a NetCDF file, following the naming conventions specified in the configuration.
+
+## 4.0 Task 2: One-Way SFNO-GFS Forecast Workflow
+
+### 4.1 Objective
+Implement a complete forecast-to-RWRF pipeline. This workflow will use GFS data as the initial condition for an SFNO deep learning weather model and process the multi-step forecast output into RWRF-formatted NetCDF files.
+
+### 4.2 Workflow Steps
+1.  **Fetch Initial Condition:** Use the workflow defined in **Task 1** to acquire and process GFS data for the forecast's initial time (`t0`).
+2.  **Data Transformation for SFNO:**
+    -   The initial condition `xarray.Dataset` will be transformed into the `xarray.DataArray` format required by the SFNO model.
+    -   This involves selecting the 73 required input variables (u10m, v10m, t2m, etc.), ensuring they are in the correct order, and stacking them along a new `variable` coordinate.
+3.  **Load SFNO Model:** The pre-trained SFNO model will be loaded using the `earth2studio.models.load()` interface.
+4.  **Generate Forecast:** The workflow will iterate through the desired number of forecast time steps. In each step, the SFNO model will be called to predict the state at the next time step.
+5.  **Post-process and Save Output:** For each forecast time step generated by the model:
+    -   The output `xarray.DataArray` will be converted back into an `xarray.Dataset` with standard variable names.
+    -   The data will be regridded to the RWRF grid (if the model's native grid is different).
+    -   The RWRF diagnostic functions will be run to produce the final set of variables.
+    -   The resulting RWRF-formatted `xarray.Dataset` will be saved to a NetCDF file.
+
+## 5.0 Task 3: Two-Way Coupled Workflow (Regional -> Global)
+
+### 5.1 Objective (Tentative)
+Enhance the SFNO forecast by incorporating higher-resolution data from a regional model. Before each forecast step, the global state will be updated with the regional forecast, allowing the global model to benefit from fine-grained regional details.
+
+### 5.2 Modified Workflow
+This task modifies the forecast loop described in **Task 2**. The process for a single forecast step from `t` to `t+1` is as follows:
+
+1.  **Load Regional Data:** Load the forecast output from the regional model valid at time `t`.
+2.  **Data Assimilation/Update:**
+    -   Identify the geographical domain where the regional and global grids overlap.
+    -   Perform a smooth blending operation to update the SFNO global state (the input for the current step) with the regional data. This may involve techniques like feathering at the boundaries of the regional domain to prevent sharp discontinuities.
+3.  **Run SFNO Forecast:** Execute the SFNO model for one time step (`t -> t+1`) using the blended, updated state as input.
+4.  **Post-process Output:** The output from the SFNO model is then post-processed into RWRF format as described in Task 2.
+5.  **Loop:** This updated state for `t+1` becomes the base for the next iteration's blending process.
+
+### 5.3 Key Challenges
+The primary challenge is the implementation of a numerically stable and effective blending algorithm. Care must be taken to smoothly merge the two data sources without introducing artifacts that could degrade the forecast quality.
+
+## 6.0 Implementation Plan
+
+1.  **Refactor Entry Point:** Create the new `main.py` script in the root directory to handle workflow selection.
+2.  **Add Configurations:** Create `config/gfs.yaml` and `config/sfno.yaml` with the necessary parameters for data fetching, model selection, and I/O control.
+3.  **Develop Workflows:**
+    -   Implement the unified data processing logic (Task 1) in `src/workflows/data_processing.py`.
+    -   Implement the SFNO forecasting and coupling logic (Task 2 & 3) in `src/workflows/sfno_forecast.py`.
+4.  **Validation:** Thoroughly validate each workflow.
+    -   **Task 1:** Compare the RWRF output from the new workflow against the output from the original `DLAMPreproc.py` to ensure consistency.
+    -   **Task 2 & 3:** Analyze the forecast outputs for physical plausibility and stability.
+
+```
+
+### `main.py`
+
+```python
+import argparse
+import yaml
+import sys
+import os
+
+# Add project root to the Python path
+project_root = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(project_root)
+
+from src.workflows import data_processing, sfno_forecast
+
+def run_data_ingestion(config_path):
+    """Runs the Data Ingestion and RWRF Conversion Workflow."""
+    print(f"Running data ingestion with config: {config_path}")
+    with open(config_path, 'r') as f:
+        config = yaml.safe_load(f)
+    data_processing.main(config, config_path)
+
+def run_sfno_forecast(config_path):
+    """Runs the One-Way SFNO-GFS Forecast Workflow."""
+    print(f"Running SFNO forecast with config: {config_path}")
+    with open(config_path, 'r') as f:
+        config = yaml.safe_load(f)
+    sfno_forecast.main(config, config_path)
+
+def main():
+    parser = argparse.ArgumentParser(description="Earth2Studio Workflow Manager")
+    parser.add_argument(
+        "workflow",
+        choices=["ingest", "forecast"],
+        help="The workflow to execute: 'ingest' for data processing, 'forecast' for SFNO forecast."
+    )
+    parser.add_argument(
+        "--config",
+        type=str,
+        required=True,
+        help="Path to the YAML configuration file for the selected workflow."
+    )
+
+    args = parser.parse_args()
+
+    if args.workflow == "ingest":
+        run_data_ingestion(args.config)
+    elif args.workflow == "forecast":
+        run_sfno_forecast(args.config)
+
+if __name__ == "__main__":
+    main()
+```
+
+### `pyproject.toml`
+
+```toml
+[project]
+name = "dlampdata"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "earth2studio[data,sfno]",
+]
+
+[tool.uv.sources]
+earth2studio = { git = "https://github.com/NVIDIA/earth2studio.git", rev = "0.9.0" }
+
+```
+
+### `requirements.txt`
+
+```text
+pyyaml
+cdsapi
+xarray
+cftime
+cfgrib
+matplotlib
+numpy
+scipy
+pandas
+netCDF4
+eccodes
+pyproj
+earth2studio
+
+
+```
+
+### `src/preproc/cds_downloader.py`
+
+```python
+import yaml
+import cdsapi
+import xarray as xr
+import numpy as np
+from datetime import datetime, timedelta
+from tqdm import tqdm
+from cdo import Cdo
+import os
+
+
+class CDSDataDownloader:
+    def __init__(self, yaml_path):
+        self.cfg = self._load_config(yaml_path)
+
+        self.cfg_time = self.cfg["share"]["time_control"]
+        self.start_t = datetime.strptime(
+            self.cfg_time["start"],
+            self.cfg_time["format"]
+        )
+        self.end_t = datetime.strptime(
+            self.cfg_time["end"],
+            self.cfg_time["format"]
+        )
+        self.a_timestep = timedelta(
+            hours=self.cfg_time["base_step_hours"]
+        )
+        self.total_steps = ((self.end_t - self.start_t) // self.a_timestep) + 1
+
+        self.io = self.cfg["share"]["io_control"]
+        self.base_dir = self.io["base_dir"]
+        self.grib_dir = os.path.join(self.base_dir, self.io["grib_subdir"])
+        self.netcdf_dir = os.path.join(self.base_dir, self.io["netcdf_subdir"])
+        self.prefix = self.io["prefix"]
+        self.timestr_fmt = self.prefix['timestr_fmt']
+        os.makedirs(self.grib_dir, exist_ok=True)
+        os.makedirs(self.netcdf_dir, exist_ok=True)
+
+        self.area = self.cfg["download"]["area"]
+        self.area_list = [
+            self.area['north'],
+            self.area['west'],
+            self.area['south'],
+            self.area['east'],
+        ]
+
+        self.client = cdsapi.Client()
+        self.cdo = Cdo(tempdir="./.cdo_tmp")
+        self.cdo.debug = True
+
+    def _load_config(self, yaml_path):
+        with open(yaml_path, "r") as f:
+            return yaml.safe_load(f)
+
+    def create_timeline(self):
+        return [
+            self.start_t + t * self.a_timestep
+            for t in range(self.total_steps)
+        ]
+
+    def _build_request(self, dataset, variables, curr_time, levels=None):
+        req = {
+            "product_type": "reanalysis",
+            "year": [curr_time.strftime('%Y')],
+            "month": [curr_time.strftime('%m')],
+            "day": [curr_time.strftime('%d')],
+            "time": [curr_time.strftime('%H:%M')],
+            "variable": variables,
+            "format": "grib"
+        }
+        if levels:
+            req["pressure_level"] = [str(l) for l in levels]
+        if self.area_list:
+            req["area"] = self.area_list
+        return req
+
+    def invertlat_to_netcdf(self, input_grib: str, output_netcdf: str):
+        """
+        Using xarray to read grib data, and invert latitude and the data depend on, then
+        save the data in netcdf format.
+        """
+        try:
+            ds = xr.open_dataset(input_grib, engine="cfgrib")
+            for lat_name in ["latitude", "lat"]:
+                if lat_name in ds.dims:
+                    ds = ds.sortby(lat_name, ascending=True)
+                    break
+
+            ds.to_netcdf(output_netcdf, format="netcdf4")
+            ds.close()
+        except Exception as e:
+            print(f"[ERROR] GRIB failed converting: {input_grib}\n{e}")
+
+    def process_download(self, curr_time):
+        self.pl = self.cfg["download"]["dataset_upper"]
+        self.sl = self.cfg["download"]["dataset_surface"]
+        #for i in tqdm(range(self.total_steps), desc="Downloading ERA5", unit="step"):
+            #curr_time = self.start_t + i * self.a_timestep
+        timestamp = curr_time.strftime(self.timestr_fmt)
+
+        pl_grb = os.path.join(
+            self.grib_dir,
+            f"{self.prefix['upper']}_{timestamp}.grib"
+        )
+        pl_nc = os.path.join(
+            self.netcdf_dir,
+            f"{self.prefix['upper']}_{timestamp}.nc"
+        )
+        sl_grb = os.path.join(
+            self.grib_dir,
+            f"{self.prefix['surface']}_{timestamp}.grib"
+        )
+        sl_nc = os.path.join(
+            self.netcdf_dir,
+            f"{self.prefix['surface']}_{timestamp}.nc"
+        )
+
+        if not os.path.exists(pl_grb):
+            req = self._build_request(self.pl['title'], self.pl['variables'], curr_time, self.pl.get('levels'))
+            self.client.retrieve(self.pl['title'], req).download(pl_grb)
+        if not os.path.exists(pl_nc):
+            #self.invertlat_to_netcdf(input_grib=pl_grb, output_netcdf=pl_nc)
+            self.cdo.invertlat(
+                input=pl_grb,
+                options="-f nc4 --eccodes",
+                output=pl_nc,
+            )
+        if not os.path.exists(sl_grb):
+            req = self._build_request(self.sl['title'], self.sl['variables'], curr_time)
+            self.client.retrieve(self.sl['title'], req).download(sl_grb)
+        if not os.path.exists(sl_nc):
+            #self.invertlat_to_netcdf(input_grib=sl_grb, output_netcdf=sl_nc)
+            self.cdo.invertlat(
+                input=sl_grb,
+                options="-f nc4 --eccodes",
+                output=sl_nc,
+            )
+
+```
+
+### `src/preproc/dlamp_regridder.py`
+
+```python
+import yaml
+import numpy as np
+import xarray as xr
+import pandas as pd
+from scipy.interpolate import griddata
+from src.registry.diagnostic_registry import load_diagnostics, sort_diagnostics_by_dependencies
+
+from datetime import datetime, timedelta
+import os
+
+class DataRegridder:
+    """
+    DataRegridder
+    │
+    ├── __init__(...)
+    ├── build_timeline(...)           # flexible time-control
+    ├── process_single_time(...)      # basis: time
+    ├── read_netcdf_data(...)         # basis: var
+    ├── horizontal_interp(...)        # basis: source_var
+    ├── diag_*()                      # basis: target_var
+    │
+    │
+    │
+    ├── write_output(...)             # basis: dict
+    │
+    └── main_process()                # A hot pot put everything-together
+    """
+    def __init__(self, yaml_path):
+        # load YAML configure
+        self.cfg = self._load_config(yaml_path)
+
+        # time control
+        self.cfg_time = self.cfg["share"]["time_control"]
+        self.start_t = datetime.strptime(
+            self.cfg_time["start"],
+            self.cfg_time["format"],
+        )
+        self.end_t = datetime.strptime(
+            self.cfg_time["end"],
+            self.cfg_time["format"],
+        )
+        self.a_timestep = timedelta(
+            hours=self.cfg_time['base_step_hours']
+        )
+        self.total_steps = ((self.end_t - self.start_t) // self.a_timestep) + 1
+
+        # I/O control
+        self.cfg_io = self.cfg["share"]["io_control"]
+        self.base_dir = self.cfg_io["base_dir"]
+        self.grib_dir = os.path.join(
+            self.base_dir,
+            self.cfg_io["grib_subdir"]
+        )
+        self.netcdf_dir = os.path.join(
+            self.base_dir,
+            self.cfg_io["netcdf_subdir"]
+        )
+        self.prefix = self.cfg_io["prefix"]
+        self.pl_prefix = self.prefix["upper"]
+        self.sl_prefix = self.prefix["surface"]
+        #self.regrid_prefix = self.prefix["regrid"]
+        self.output_prefix = self.prefix["output"]
+        self.timestr_fmt = self.prefix["timestr_fmt"]
+        os.makedirs(self.grib_dir, exist_ok=True)
+        os.makedirs(self.netcdf_dir, exist_ok=True)
+
+        # preload target grids prevent from open file repeatly
+        self.regrid = self.cfg["regrid"]
+        self.target_nc = self.regrid["target_nc"]
+        self.tgtlon = self.regrid["target_lon"]
+        self.tgtlat = self.regrid["target_lat"]
+        self.tgtpres = self.regrid["target_pres"]
+        self.srclon = self.regrid["source_lon"]
+        self.srclat = self.regrid["source_lat"]
+        self.srcpres = self.regrid["source_pres"]
+        self.pres_levels = self.regrid["levels"]
+        self.adopted_varlist = self.regrid["adopted_varlist"]
+        self.write_regrid = self.regrid["write_regrid"]
+        with xr.open_dataset(self.target_nc, engine="netcdf4") as tgtds:
+            self.XLONG = tgtds[self.tgtlon].values
+            self.XLAT = tgtds[self.tgtlat].values
+            self.static = tgtds[self.adopted_varlist]
+            #self.outds = tgtds.copy(deep=True, data=data_vars["XLONG", "XLAT", "pres_levels"])
+
+        # diagnostics module
+        self.diagnostics = load_diagnostics(yaml_path)
+        self.source_dataset = self.cfg["registry"]["source_dataset"]
+
+    def _load_config(self, yaml_path):
+        with open(yaml_path, mode="r") as f:
+            return yaml.safe_load(f)
+
+    def build_timeline(self):
+        return [
+            self.start_t + t * self.a_timestep
+            for t in range(self.total_steps)
+        ]
+
+    def gen_io_filename(self, curr_time):
+        timestamp = curr_time.strftime(self.timestr_fmt)
+        pl_nc = f"{self.netcdf_dir}/{self.pl_prefix}_{timestamp}.nc"
+        sl_nc = f"{self.netcdf_dir}/{self.sl_prefix}_{timestamp}.nc"
+        #regrid_nc = f"{self.netcdf_dir}/{self.regrid_prefix}_{timestamp}.nc"
+        output_nc = f"{self.netcdf_dir}/{self.output_prefix}_{timestamp}.nc"
+        #print(pl_nc, "\n", sl_nc, "\n", regrid_nc, "\n", output_nc)
+        return pl_nc, sl_nc, output_nc
+
+    def _interpolate_with_fallback(self, points, values, xi):
+        """
+        Perform linear interpolation with a nearest-neighbor fallback for NaN values.
+
+        Parameters
+        ----------
+        points : ndarray
+            Coordinates of the source data points.
+        values : ndarray
+            Values of the source data points.
+        xi : tuple
+            Coordinates of the target grid.
+
+        Returns
+        -------
+        ndarray
+            Interpolated grid.
+        """
+        # First, try linear interpolation
+        grid_linear = griddata(points, values, xi, method="linear")
+
+        # Check if any NaNs were produced
+        nan_mask = np.isnan(grid_linear)
+
+        # If there are NaNs, use nearest neighbor to fill them
+        if np.any(nan_mask):
+            # Perform nearest interpolation
+            grid_nearest = griddata(points, values, xi, method="nearest")
+            # Fill in the NaNs from the linear result with values from the nearest result
+            grid_linear[nan_mask] = grid_nearest[nan_mask]
+
+        return grid_linear
+
+    def interp_horizontal_v2(self, out_dict, curr_time, src_nc):
+        """
+        Interpolates data from a source grid to a target grid horizontally.
+        Fills NaN values resulting from linear interpolation using the 'nearest' method.
+
+        target_lat: "XLAT"
+        target_lon: "XLONG"
+        target_pres: "pres_levels"
+        source_lat: "lat"
+        source_lon: "lon"
+        source_pres: "plev"
+
+        Parameters
+        ----------
+        out_dict : dict
+            Dictionary to store the output interpolated data.
+        curr_time : datetime or similar
+            Current time step being processed.
+        src_nc : str or path-like
+            Path to the source NetCDF file.
+
+        Returns
+        -------
+        dict
+            The updated dictionary with interpolated data.
+        """
+        dim_upp = ["Time", "pres_bottom_top", "south_north", "west_east"]
+        dim_sfc = ["Time", "south_north", "west_east"]
+
+        with xr.open_dataset(src_nc, engine="netcdf4") as ncds:
+            lon = ncds[self.srclon].values
+            lat = ncds[self.srclat].values
+            if np.ndim(lon) == 1 and np.ndim(lat) == 1:
+                lons, lats = np.meshgrid(lon, lat)
+            else:
+                lons, lats = lon, lat
+
+            # Prepare source points for griddata
+            points = np.vstack((lons.ravel(), lats.ravel())).T
+            # Prepare target points
+            xi = (self.XLONG.ravel(), self.XLAT.ravel())
+            nt, ny, nx = self.XLONG.shape
+
+            for var in ncds.keys():
+                # Skip coordinate variables if they appear in the keys
+                if var in [self.srclon, self.srclat, 'plev', 'time']:
+                    continue
+
+                data = np.squeeze(ncds[var].values)
+                print(f"[REGRID] {var} => {data.shape}")
+
+                if data.ndim == 3:
+                    nl = data.shape[0]
+                    data_h = np.empty((nl, ny, nx))
+                    for pl in range(nl):
+                        # Use the new interpolation function with fallback
+                        interp_data = self._interpolate_with_fallback(
+                            points, data[pl].ravel(), xi
+                        )
+                        data_h[pl] = np.reshape(interp_data, (ny, nx))
+
+                    data_h = np.expand_dims(data_h, axis=0)
+                    out_dict[var] = (dim_upp, data_h.astype(np.float32))
+
+                elif data.ndim == 2:
+                    # Use the new interpolation function with fallback
+                    interp_data = self._interpolate_with_fallback(
+                        points, data.ravel(), xi
+                    )
+                    data_h = np.reshape(interp_data, (ny, nx))
+                    data_h = np.expand_dims(data_h, axis=0)
+
+                    out_dict[var] = (dim_sfc, data_h.astype(np.float32))
+
+        return out_dict
+
+    def interp_horizontal(self, out_dict, curr_time, src_nc):
+        """
+        target_lat: "XLAT"
+        target_lon: "XLONG"
+        target_pres: "pres_levels"
+        source_lat: "lat"
+        source_lon: "lon"
+        source_pres: "plev"
+        Parameters
+        ----------
+        out_dict : TYPE
+            DESCRIPTION.
+        curr_time : TYPE
+            DESCRIPTION.
+        src_nc : TYPE
+            DESCRIPTION.
+
+        Returns
+        -------
+        interp_dict : TYPE
+            DESCRIPTION.
+
+        """
+        dim_upp = ["Time", "pres_bottom_top", "south_north", "west_east"]
+        dim_sfc = ["Time", "south_north", "west_east"]
+
+        with xr.open_dataset(src_nc, engine="netcdf4") as ncds:
+            lon = ncds[self.srclon].values
+            lat = ncds[self.srclat].values
+            if np.ndim(lon) == 1 and np.ndim(lat) == 1:
+                lons, lats = np.meshgrid(lon, lat)
+            else:
+                lons, lats = lon, lat
+
+            points = list(zip(lons.ravel(), lats.ravel()))
+            xi = (self.XLONG, self.XLAT)
+            nt, ny, nx = self.XLONG.shape
+
+            for var in ncds.keys():
+                data = np.squeeze(ncds[var].values)
+                print(f"[REGRID] {var} => {data.shape}")
+                if data.ndim == 3:
+                    nl = data.shape[0]
+                    data_h = np.empty((nl, ny, nx))
+                    for pl in range(nl):
+                        data_h[pl] = griddata(
+                            points, data[pl].ravel(),
+                            xi, method="linear"
+                        )
+                        # if np.isnan(data_h[pl]).any():
+                        #     mean_mask = np.nanmean(data_h[pl].ravel())
+                        #     data_h[pl][np.isnan(data_h[pl])] = mean_mask
+                    data_h = np.expand_dims(data_h, axis=0)
+
+                    out_dict[var] = (dim_upp, data_h.astype(np.float32))
+
+                elif data.ndim == 2:
+                    data_h = griddata(
+                        points, data.ravel(), xi, method="linear"
+                    )
+                    # if np.isnan(data_h).any():
+                    #     mean_mask = np.nanmean(data_h.ravel())
+                    #     data_h[np.isnan(data_h)] = mean_mask
+                    data_h = np.expand_dims(np.reshape(data_h, (ny,nx)), axis=0)
+
+                    out_dict[var] = (dim_sfc, data_h.astype(np.float32))
+
+        return out_dict
+
+
+    def process_single_time(self, curr_time):
+        print(f"[INFO] Processing single time: {curr_time}")
+        [pl_nc, sl_nc, output_nc] = self.gen_io_filename(curr_time)
+
+        out_dict = {}
+        out2_dict = {}
+        for var in self.static.data_vars: # Iterate over data_vars, not the Dataset itself
+            static_data = self.static[var].values
+            out_dict[var] = (self.static[var].dims, static_data) # Use original dimensions
+            out2_dict[var] = (self.static[var].dims, static_data, self.static[var].attrs)
+
+        # Ensure NetCDF files exist, otherwise skip this timestep
+        if not os.path.exists(pl_nc) and not os.path.exists(sl_nc):
+            print(f"[WARN] Missing NetCDF files for {curr_time}")
+            return
+
+        #out_dict = {}
+        out_coords = {}
+        nt, ny, nx = np.shape(self.XLONG)
+        test_X = np.reshape(self.XLONG, (ny,nx))
+        print(np.shape(test_X))
+        #out_dict["XLONG"] = (
+        #    ["Time", "south_north", "west_east"],
+        #    np.expand_dims(np.reshape(self.XLONG,(ny,nx)))
+        #)
+        #out_dict["XLAT"] = (
+        #    ["Time", "south_north", "west_east"], self.XLAT
+        #)
+        #out_dict["pres_levels"] = (
+        #    ["pres_bottom_top"], self.pres_levels
+        #)
+        out_coords={
+            "Time": ("Time", [np.datetime64(curr_time)]),
+            "pres_bottom_top": ("pres_bottom_top", range(len(self.pres_levels))), # Dynamically get length
+            "south_north": ("south_north", range(ny)),
+            "west_east": ("west_east", range(nx)),
+        }
+        out2_coords = out_coords
+        out_attrs={
+            "title": f"Interpolated dataset at {curr_time}"
+        }
+        out2_attrs={
+            "title": f"Diagnosed and interpolated dataset at {curr_time}"
+        }
+
+
+        # Horizontally interpolate pressure level data
+        if os.path.exists(pl_nc):
+            print("[REGRID]: ", pl_nc)
+            self.interp_horizontal(out_dict, curr_time, pl_nc)
+
+        # Horizontally interpolate surface level data
+        if os.path.exists(sl_nc):
+            print("[REGRID]: ", sl_nc)
+            self.interp_horizontal(out_dict, curr_time, sl_nc)
+
+        # Add static variables to the interpolation dictionary
+        # Ensure correct dimensions for static variables;
+        # assuming (Time, south_north, west_east) here
+        #out2_dict = {}
+        #for var in self.static.data_vars: # Iterate over data_vars, not the Dataset itself
+        #    static_data = np.squeeze(self.static[var].values)
+        #    out_dict[var] = (self.static[var].dims, static_data) # Use original dimensions
+        #    out2_dict[var] = (self.static[var].dims, static_data, self.static[var].attrs)
+
+        #nt, ny, nx = np.shape(self.XLONG)
+        #out_dict["XLONG"] = (
+        #    ["Time", "south_north", "west_east"],
+        #    np.expand_dims(np.squeeze(self.XLONG), axis=0)
+        #)
+        #out_dict["XLAT"] = (
+        #    ["Time", "south_north", "west_east"],
+        #    np.expand_dims(np.squeeze(self.XLAT), axis=0)
+        #)
+        #out_dict["pres_levels"] = (
+        #    ["pres_bottom_top"], self.pres_levels
+        #)
+        outds = xr.Dataset(
+            data_vars = out_dict, coords = out_coords, attrs = out_attrs
+        )
+        out2ds = xr.Dataset(
+            data_vars = out2_dict, coords = out2_coords, attrs = out2_attrs
+        )
+        if self.write_regrid:
+            outds.to_netcdf(self.regrid_nc, format="NETCDF4")
+            print(f"[DONE] Saved interpolated NetCDF for {curr_time}")
+        else:
+            print(f"[DONE] interpolated NetCDF for {curr_time} without saving the data")
+
+        # --- Diagnostic variable calculation and output ---
+
+        ordered_vars = sort_diagnostics_by_dependencies(self.diagnostics)
+        #out2_dict = {}
+        #out2_dict["XLONG"] = out_dict["XLONG"]
+        #out2_dict["XLAT"] = out_dict["XLAT"]
+        #out2_dict["pres_levels"] = out_dict["pres_levels"]
+
+
+        for var in ordered_vars:
+            if var not in self.diagnostics: # Skip variables that are just dependencies but not defined as outputs
+                continue
+
+            info = self.diagnostics[var]
+            requires = info["requires"]
+            #print("info requires = ", info, requires)
+            diag_func = info["function"]
+
+            if all(req in outds.data_vars or req in outds.coords for req in requires):
+                print(f"[DIAGNOSE] Calculating diagnostic: {var}")
+                try:
+                    # === MODIFIED CALL ===
+                    # Pass the source dataset type and the current dataset to the diagnostic function
+                    diagnostic_dataarray = diag_func(self.source_dataset, outds)
+                    # =====================
+
+                    # Add the calculated diagnostic variable to the dataset
+                    out2ds[var] = diagnostic_dataarray
+                    print(f"[DIAGNOSE] Calculated {var}, shape: {out2ds[var].shape}, mean: {out2ds[var].values.mean():.4f}") # Access value after adding
+                    #print(f"[DIAGNOSE] Calculated {var}, shape: {out2ds[var].shape}") # Simpler print
+
+                except Exception as e:
+                     print(f"[ERROR] Failed to calculate diagnostic {var}: {e}")
+                     import traceback
+                     traceback.print_exc()
+            else:
+                # Find missing requirements
+                missing = [req for req in requires if req not in outds.data_vars and req not in outds.coords]
+                print(f"[WARN] Missing required inputs for diagnostic {var}: {missing}. Skipping calculation for this variable.")
+
+        # Save once outside the loop
+        out2ds.to_netcdf(output_nc, format="NETCDF4")
+        print(f"[DONE] Saved diagnostic NetCDF for {curr_time}")
+
+    def main_process(self):
+        for curr_time in self.build_timeline():
+            self.process_single_time(curr_time)
+
+```
+
+### `src/registry/diagnostic_functions.py`
+
+```python
+import numpy as np
+import xarray as xr
+import yaml
+import logging
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
+def _create_dataarray(
+        data: np.ndarray,
+        ds: xr.Dataset,
+        var_name: str,
+        long_name: str,
+        units: str,
+    ) -> xr.DataArray:
+    """
+
+    """
+
+    # setup default coords
+            coords = {"Time": ds["Time"]}
+        #coords["pres_bottom_top"] = {}
+        dims = ["Time"]
+    
+        if var_name == "pres_levels":
+            dims.append("pres_bottom_top")
+            coords["pres_bottom_top"] = ds["pres_bottom_top"]
+    
+        # If the intent for XLONG_C/XLAT_C is to create new coordinate arrays, keep this. 
+        # Otherwise, they should be treated like other 2D/3D variables using existing coordinates.
+        # Assuming they might be special cases, keeping for now but noting potential for simplification.
+        elif var_name in ["XLONG_C", "XLAT_C"]:
+            dims += ["corner_south_north", "corner_west_east"]
+            # These may need to be derived from ds['latitude'] and ds['longitude'] corners
+            # For now, keeping as is, but this part would need specific logic if these are not simple linspaces
+            coords["corner_south_north"] = ("corner_south_north", np.linspace(-450, 450, 451))
+            coords["corner_west_east"] = ("corner_west_east", np.linspace(-450, 450, 451))
+    
+        elif data.ndim == 3: # Assuming (Time, pres_bottom_top, south_north, west_east) data, without an explicit Time dim added here
+            dims += ["pres_bottom_top", "south_north", "west_east"]
+            coords.update({
+                "pres_bottom_top": ds["pres_bottom_top"],
+                "south_north": ds["south_north"],
+                "west_east": ds["west_east"],
+                "latitude": (("south_north", "west_east"), ds["latitude"].values),
+                "longitude": (("south_north", "west_east"), ds["longitude"].values),
+            })
+            # No np.expand_dims here because the data is already assumed to be for one timestep and the Time dim is handled by the caller
+            final_data = data
+    
+        elif data.ndim == 2: # Assuming (Time, south_north, west_east) data for surface variables
+            dims += ["south_north", "west_east"]
+            coords.update({
+                "south_north": ds["south_north"],
+                "west_east": ds["west_east"],
+                "latitude": (("south_north", "west_east"), ds["latitude"].values),
+                "longitude": (("south_north", "west_east"), ds["longitude"].values),
+            })
+            final_data = data
+    
+        else: # Fallback for unexpected dimensions, adjust as necessary
+            logging.warning(f"_create_dataarray received data with unexpected dimensions: {data.ndim} for var_name {var_name}")
+            final_data = data # Keep data as is, let xarray handle dims if possible, or it might error out.
+            # Attempt to infer dimensions if no other case matched and it's not a single scalar
+            if data.ndim == 1 and "pres_bottom_top" in ds:
+                dims += ["pres_bottom_top"]
+                coords["pres_bottom_top"] = ds["pres_bottom_top"]
+            elif data.ndim == 1 and ("south_north" in ds and "west_east" in ds):
+                dims += ["south_north", "west_east"]
+                coords.update({
+                    "south_north": ds["south_north"],
+                    "west_east": ds["west_east"],
+                    "latitude": (("south_north", "west_east"), ds["latitude"].values),
+                    "longitude": (("south_north", "west_east"), ds["longitude"].values),
+                })
+            # ... more robust inference might be needed here ...
+            # For now, relying on the 'calculated_da.name' to be correct in main_e2s.py
+    
+        # The data needs to be expanded to have a 'Time' dimension. This is done here since _create_dataarray is called per timestep.
+        if 'Time' not in dims:
+            dims.insert(0, 'Time')
+            final_data = np.expand_dims(final_data, axis=0)
+    
+        if var_name == "pres_levels":
+            final_data = np.expand_dims(final_data, axis=0) # Add time dim if pres_levels is 1D
+        
+        # Ensure data has a time dimension if it's missing and we are expecting one
+        if 'Time' in dims and final_data.shape[0] != len(coords['Time']):
+            final_data = np.expand_dims(final_data, axis=0)
+    
+    
+        return xr.DataArray(
+            final_data.astype(np.float32), # Changed data to final_data
+            coords=coords,
+            dims=dims,
+            name=var_name, # Changed nc_key to var_name based on function signature
+            attrs={
+                "long_name": long_name,
+                "units": units,
+                #"dtype": str(data.dtype),
+            }
+        )
+def sat_vapor_pressure_water(T):  # T in Celsius
+    return 6.112 * np.exp((17.67 * T) / (T + 243.5))  # hPa
+
+def diag_z_p(source_dataset: str, ds: xr.Dataset) -> xr.DataArray:
+    """
+    Geopotential height = geopotential / g
+
+    """
+    g = 9.80665 # Standard gravity constant
+
+    match source_dataset:
+
+        case "ERA5":
+            data = np.squeeze(ds["z"].values) / g
+            nc_key = "z_p"
+
+        case "ERA5_r":
+            data = np.squeeze(ds["z_p"].values) * g
+            nc_key = "z"
+
+        case "RWRF":
+            data = np.squeeze(ds["z_p"].values)
+
+        case _:
+            data = np.nan
+
+    return _create_dataarray(data, ds, nc_key, "Geopotential Height", "m")
+
+
+def diag_tk_p(source_dataset: str, ds: xr.Dataset) -> xr.DataArray:
+    """
+    Air Temperature [K]
+
+    """
+
+    match source_dataset:
+
+        case "ERA5":
+            data = np.squeeze(ds["t"].values)
+            nc_key = "tk_p"
+
+        case "ERA5_r":
+            data = np.squeeze(ds["tk_p"].values)
+            nc_key = "t"
+
+        case "RWRF":
+            data = np.squeeze(ds["tk_p"].values)
+
+        case _:
+            data = np.nan
+
+    return _create_dataarray(data, ds, nc_key, "Air Temperature", "K")
+
+
+def diag_umet_p(source_dataset: str, ds: xr.Dataset) -> xr.DataArray:
+    """
+    U-component of wind (Earth-rotated)
+
+    """
+
+    match source_dataset:
+
+        case "ERA5":
+            data = np.squeeze(ds["u"].values)
+            nc_key = "umet_p"
+
+        case "ERA5_r":
+            data = np.squeeze(ds["umet_p"].values)
+            nc_key = "u"
+
+        case "RWRF":
+            data = np.squeeze(ds["umet_p"].values)
+            nc_key = "umet_p"
+
+        case _:
+            data = np.nan
+
+    return _create_dataarray(data, ds, nc_key, "U-component of Wind", "m s-1")
+
+
+def diag_vmet_p(source_dataset: str, ds: xr.Dataset) -> xr.DataArray:
+    """
+    V-component of wind (Earth-rotated)
+
+    """
+
+    match source_dataset:
+
+        case "ERA5":
+            data = np.squeeze(ds["v"].values)
+            nc_key = "vmet_p"
+
+        case "ERA5_r":
+            data = np.squeeze(ds["vmet_p"].values)
+            nc_key = "v"
+
+        case "RWRF":
+            data = np.squeeze(ds["vmet_p"].values)
+            nc_key = "vmet_p"
+
+        case _:
+            data = np.nan
+
+    return _create_dataarray(data, ds, nc_key, "V-component of Wind", "m s-1")
+
+
+def diag_QVAPOR_p(source_dataset: str, ds: xr.Dataset) -> xr.DataArray:
+    """
+    Specific humidity to water vapor mixing ratio
+
+    """
+
+    match source_dataset:
+
+        case "ERA5":
+            if "q" in ds:
+                q = np.squeeze(ds["q"].values)
+                data = q/(1-q)
+            elif "r" in ds and "t" in ds and "pres_levels" in ds:
+                # Convert relative humidity to mixing ratio
+                rh = np.squeeze(ds["r"].values) / 100.0  # convert to fraction
+                t = np.squeeze(ds["t"].values)  # temperature in Kelvin
+                p = np.squeeze(ds["pres_levels"].values) * 100 # pressure in Pa
+
+                # Convert temperature to Celsius for vapor pressure calculation
+                t_celsius = t - 273.15
+
+                # Saturation vapor pressure (hPa)
+                es = sat_vapor_pressure_water(t_celsius)
+
+                # Actual vapor pressure (hPa)
+                e = rh * es
+
+                # Mixing ratio
+                data = (0.622 * e) / (p / 100.0 - e) # p/100.0 to convert Pa to hPa
+            else:
+                data = np.nan
+
+        case "RWRF":
+            data = np.squeeze(ds["QVAPOR_p"].values)
+            nc_key = "QVAPOR_p"
+
+        case _:
+            data = np.nan
+            nc_key = "QVAPOR_p"
+
+    return _create_dataarray(data, ds, nc_key, "Water Vapor Mixing Ratio", "kg kg-1")
+
+
+def diag_QRAIN_p(source_dataset: str, ds: xr.Dataset) -> xr.DataArray:
+    """
+    Specific rain water content to rain water mixing ratio
+
+    """
+
+    match source_dataset:
+
+        case "ERA5":
+            q = np.squeeze(ds["crwc"].values)
+            data = q/(1-q)
+
+        case "RWRF":
+            data = np.squeeze(ds["QRAIN_p"].values)
+            nc_key = "QRAIN_p"
+
+        case _:
+            data = np.nan
+            nc_key = "QRAIN_p"
+
+    return _create_dataarray(data, ds, nc_key, "Rain Water Mixing Ratio", "kg kg-1")
+
+
+def diag_QCLOUD_p(source_dataset: str, ds: xr.Dataset) -> xr.DataArray:
+    """
+    Specific cloud liquid water content to cloud water mixing ratio
+
+    """
+
+    match source_dataset:
+
+        case "ERA5":
+            q = np.squeeze(ds["clwc"].values)
+            data = q/(1-q)
+
+        case "RWRF":
+            data = np.squeeze(ds["QCLOUD_p"].values)
+            nc_key = "QCLOUD_p"
+
+        case _:
+            data = np.nan
+            nc_key = "QCLOUD_p"
+
+    return _create_dataarray(data, ds, nc_key, "Cloud Water Mixing Ratio", "kg kg-1")
+
+
+def diag_QSNOW_p(source_dataset: str, ds: xr.Dataset) -> xr.DataArray:
+    """
+    Specific snow water content to snow water mixing ratio
+
+    """
+
+    match source_dataset:
+
+        case "ERA5":
+            q = np.squeeze(ds["cswc"].values)
+            data = q/(1-q)
+
+        case "RWRF":
+            data = np.squeeze(ds["QSNOW_p"].values)
+            nc_key = "QSNOW_p"
+
+        case _:
+            data = np.nan
+            nc_key = "QSNOW_p"
+
+    return _create_dataarray(data, ds, nc_key, "Snow Water Mixing Ratio", "kg kg-1")
+
+
+def diag_QICE_p(source_dataset: str, ds: xr.Dataset) -> xr.DataArray:
+    """
+    Specific cloud ice content to cloud ice mixing ratio
+
+    """
+
+    match source_dataset:
+
+        case "ERA5":
+            q = np.squeeze(ds["ciwc"].values)
+            data = q/(1-q)
+
+        case "RWRF":
+            data = np.squeeze(ds["QICE_p"].values)
+            nc_key = "QICE_p"
+
+        case _:
+            data = np.nan
+            nc_key = "QICE_p"
+
+    return _create_dataarray(data, ds, nc_key, "Cloud Ice Mixing Ratio", "kg kg-1")
+
+
+def diag_QGRAUP_p(source_dataset: str, ds: xr.Dataset) -> xr.DataArray:
+    """
+    Specific graupel water content to graupel water mixing ratio
+
+    """
+
+    match source_dataset:
+
+        case "ERA5":
+            q = np.squeeze(ds["q"].values) * 0
+            data = q/(1-q)
+
+        case "RWRF":
+            data = np.squeeze(ds["QGRAUP_p"].values)
+            nc_key = "QGRAUP_p"
+
+        case _:
+            data = np.nan
+            nc_key = "QGRAUP_p"
+
+    return _create_dataarray(data, ds, nc_key, "Graupel Water Mixing Ratio", "kg kg-1")
+
+
+def diag_QTOTAL_p(source_dataset: str, ds: xr.Dataset) -> xr.DataArray:
+    """
+    Total hydrometeors mixing ratio
+
+    """
+
+    match source_dataset:
+
+        case "ERA5":
+            qlist = ["clwc", "crwc", "ciwc", "cswc"]
+            # Convert each specific humidity to mixing ratio first, then sum them up.
+            mixing_ratios = [np.squeeze(ds[q].values) / (1 - np.squeeze(ds[q].values)) for q in qlist]
+            data = sum(mixing_ratios)
+            nc_key = "QTOTAL_p"
+
+        case "RWRF":
+            qlist = ["QCLOUD_p", "QRAIN_p", "QICE_p", "QSNOW_p", "QGRAUP_p"]
+            data = sum(np.squeeze(ds[q].values) for q in qlist)
+            nc_key = "QTOTAL_p"
+        case _:
+            data = np.nan
+
+    return _create_dataarray(data, ds, nc_key, "Total Hydrometeors Mixing Ratio", "kg kg-1")
+
+
+def diag_wa_p(source_dataset: str, ds: xr.Dataset) -> xr.DataArray:
+    """
+    omega [Pa s-1] to w [m s-1]
+
+    """
+    Rd = 287.058 # Dry air gas constant J/(kg K)
+    epsilon = 0.622 # Ratio of molecular weight of water vapor to dry air
+    g = 9.80665 # Standard gravity constant
+
+    match source_dataset:
+
+        case "ERA5":
+            omega = np.squeeze(ds["w"].values)
+            tmk = np.squeeze(ds["t"].values)
+            plev = np.squeeze(ds["pres_levels"].values * 100) # pressure in Pa
+
+            if "q" in ds:
+                q = np.squeeze(ds["q"].values)
+                qvp = q / (1 - q)
+            elif "r" in ds and "t" in ds and "pres_levels" in ds:
+                # Convert relative humidity to mixing ratio
+                rh = np.squeeze(ds["r"].values) / 100.0  # convert to fraction
+                t_celsius = tmk - 273.15 # temperature in Celsius
+
+                # Saturation vapor pressure (hPa)
+                es = sat_vapor_pressure_water(t_celsius)
+
+                # Actual vapor pressure (hPa)
+                e = rh * es
+
+                # Mixing ratio
+                qvp = (0.622 * e) / (plev / 100.0 - e) # plev/100.0 to convert Pa to hPa
+            else:
+                qvp = np.zeros_like(tmk) # Default to 0 if no humidity data
+
+            t_virt = tmk * (1 + 0.61 * qvp)
+
+            prs = np.zeros(np.shape(tmk))
+            for pl in range(len(plev)):
+                prs[pl] = plev[pl]
+
+            data = -1 * omega * Rd * t_virt / prs / g
+
+        case "RWRF":
+            data = np.squeeze(ds["wa_p"].values)
+            nc_key = "wa_p"
+
+        case _:
+            data = np.nan
+            nc_key = "wa_p"
+
+    return _create_dataarray(data, ds, nc_key, "Vertical Velocity", "m s-1")
+
+def diag_T2(source_dataset: str, ds: xr.Dataset) -> xr.DataArray:
+    """
+    Air Temperature at 2 m height above surface
+
+    """
+
+    match source_dataset:
+
+        case "ERA5":
+            data = np.squeeze(ds["2t"].values)
+
+        case "RWRF":
+            data = np.squeeze(ds["T2"].values)
+            nc_key = "T2"
+
+        case _:
+            data = np.nan
+            nc_key = "T2"
+
+    return _create_dataarray(data, ds, nc_key, "2m Temperature", "K")
+
+
+def diag_Q2(source_dataset: str, ds: xr.Dataset) -> xr.DataArray:
+    """
+    water vapor mixing ratio at 2 m height above surface
+
+    """
+
+    match source_dataset:
+
+        case "ERA5":
+            td2 = np.squeeze(ds["2d"].values)
+            sp = np.squeeze(ds["sp"].values)
+            e = sat_vapor_pressure_water(td2 - 273.15) * 100  # [Pa]
+            data = (0.622 * e) / (sp - e)
+
+        case "RWRF":
+            data = np.squeeze(ds["Q2"].values)
+            nc_key = "Q2"
+
+        case _:
+            data = np.nan
+            nc_key = "Q2"
+
+    return _create_dataarray(data, ds, nc_key, "2m Mixing Ratio", "kg kg-1")
+
+
+def diag_rh2(source_dataset: str, ds: xr.Dataset) -> xr.DataArray:
+    """
+    relative humidity at 2 m height above surface
+
+    """
+
+    match source_dataset:
+
+        case "ERA5":
+            td2 = np.squeeze(ds["2d"].values)
+            t2 = np.squeeze(ds["2t"].values)
+            sp = np.squeeze(ds["sp"].values)
+            e = sat_vapor_pressure_water(td2 - 273.15) * 100  # [Pa]
+            esat = sat_vapor_pressure_water(t2 - 273.15) * 100  # [Pa]
+            data = e / esat * 100
+
+        case "RWRF":
+            data = np.squeeze(ds["rh2"].values)
+            nc_key = "rh2"
+
+        case _:
+            data = np.nan
+            nc_key = "rh2"
+
+    return _create_dataarray(data, ds, nc_key, "2m Relative Humidity", "%")
+
+
+def diag_td2(source_dataset: str, ds: xr.Dataset) -> xr.DataArray:
+    """
+    dew-point temperature at 2 m height above surface
+
+    """
+
+    match source_dataset:
+
+        case "ERA5":
+            data = np.squeeze(ds["2d"].values)
+
+        case "RWRF":
+            data = np.squeeze(ds["td2"].values)
+            nc_key = "td2"
+
+        case _:
+            data = np.nan
+            nc_key = "td2"
+
+    return _create_dataarray(data, ds, nc_key, "2m Dew Point Temperature", "K")
+
+
+def diag_umet10(source_dataset: str, ds: xr.Dataset) -> xr.DataArray:
+    """
+    U-wind at 10 m height above surface
+
+    """
+
+    match source_dataset:
+
+        case "ERA5":
+            data = np.squeeze(ds["10u"].values)
+
+        case "RWRF":
+            data = np.squeeze(ds["umet10"].values)
+            nc_key = "umet10"
+
+        case _:
+            data = np.nan
+            nc_key = "umet10"
+
+    return _create_dataarray(data, ds, nc_key, "10m U-component of Wind", "m s-1")
+
+
+def diag_vmet10(source_dataset: str, ds: xr.Dataset) -> xr.DataArray:
+    """
+    V-wind at 10 m height above surface
+
+    """
+
+    match source_dataset:
+
+        case "ERA5":
+            data = np.squeeze(ds["10v"].values)
+
+        case "RWRF":
+            data = np.squeeze(ds["vmet10"].values)
+            nc_key = "vmet10"
+
+        case _:
+            data = np.nan
+            nc_key = "vmet10"
+
+    return _create_dataarray(data, ds, nc_key, "10m V-component of Wind", "m s-1")
+
+def diag_umet100(source_dataset: str, ds: xr.Dataset) -> xr.DataArray:
+    """
+    U-wind at 100 m height above surface
+
+    """
+
+    match source_dataset:
+
+        case "ERA5":
+            data = np.squeeze(ds["100u"].values)
+            nc_key = "umet100"
+
+        case "ERA5_r":
+            data = np.squeeze(ds["umet100"].values)
+            nc_key = "u100m"
+
+        case "RWRF":
+            data = np.squeeze(ds["umet100"].values)
+            nc_key = "umet100"
+
+        case _:
+            data = np.nan
+            nc_key = "umet100"
+
+    return _create_dataarray(data, ds, nc_key, "100m U-component of Wind", "m s-1")
+
+
+def diag_vmet100(source_dataset: str, ds: xr.Dataset) -> xr.DataArray:
+    """
+    V-wind at 100 m height above surface
+
+    """
+
+    match source_dataset:
+
+        case "ERA5":
+            data = np.squeeze(ds["100v"].values)
+            nc_key = "vmet100"
+
+        case "ERA5_r":
+            data = np.squeeze(ds["vmet100"].values)
+            nc_key = "v100m"
+
+        case "RWRF":
+            data = np.squeeze(ds["vmet100"].values)
+            nc_key = "vmet100"
+
+        case _:
+            data = np.nan
+            nc_key = "vmet100"
+
+    return _create_dataarray(data, ds, nc_key, "100m V-component of Wind", "m s-1")
+
+
+def diag_slp(source_dataset: str, ds: xr.Dataset) -> xr.DataArray:
+    """
+    sea-level pressure at surface [hPa]
+
+    """
+
+    match source_dataset:
+
+        case "ERA5":
+            data = np.squeeze(ds["msl"].values) / 100.
+            nc_key = "slp"
+
+        case "ERA5_r":
+            data = np.squeeze(ds["slp"].values) * 100.
+            nc_key = "msl"
+
+        case "RWRF":
+            data = np.squeeze(ds["slp"].values)
+            nc_key = "slp"
+
+        case _:
+            data = np.nan
+            nc_key = "slp"
+
+    return _create_dataarray(data, ds, nc_key, "Sea Level Pressure", "hPa")
+
+
+def diag_SST(source_dataset: str, ds: xr.Dataset) -> xr.DataArray:
+    """
+    sea surface temperature
+
+    """
+
+    match source_dataset:
+
+        case "ERA5":
+            data = np.squeeze(ds["sst"].values)
+            nc_key = "SST"
+            #sst[np.isnan(sst)] = np.nanmean(sst.ravel())
+            #data = sst
+
+        case "ERA5_r":
+            data = np.squeeze(ds["SST"].values)
+            nc_key = "sst"
+
+        case "RWRF":
+            data = np.squeeze(ds["SST"].values)
+
+        case _:
+            data = np.nan
+
+    return _create_dataarray(data, ds, nc_key, "Sea Surface Temperature", "K")
+
+
+def diag_PSFC(source_dataset: str, ds: xr.Dataset) -> xr.DataArray:
+    """
+    surface pressure [Pa]
+
+    """
+
+    match source_dataset:
+
+        case "ERA5":
+            data = np.squeeze(ds["sp"].values)
+            nc_key = "PSFC"
+
+        case "ERA5_r":
+            data = np.squeeze(ds["PSFC"].values)
+            nc_key = "sp"
+
+        case "RWRF":
+            data = np.squeeze(ds["PSFC"].values)
+            nc_key = "PSFC"
+
+        case _:
+            data = np.nan
+
+    return _create_dataarray(data, ds, nc_key, "Surface Pressure", "Pa")
+
+
+def diag_pw(source_dataset: str, ds: xr.Dataset) -> xr.DataArray:
+    """
+    dew-point temperature at 2 m height above surface
+
+    """
+
+    match source_dataset:
+
+        case "ERA5":
+            data = np.squeeze(ds["tcwv"].values)
+            nc_key = "pw"
+
+        case "ERA5_r":
+            data = np.squeeze(ds["pw"].values)
+            nc_key = "tcwv"
+
+        case "RWRF":
+            data = np.squeeze(ds["pw"].values)
+            nc_key = "pw"
+
+        case _:
+            data = np.nan
+
+    return _create_dataarray(data, ds, nc_key, "Precipitable Water", "kg m-2")
+
+
+def diag_PBLH(source_dataset: str, ds: xr.Dataset) -> xr.DataArray:
+    """
+    dew-point temperature at 2 m height above surface
+
+    """
+
+    match source_dataset:
+
+        case "ERA5":
+            data = np.squeeze(ds["blh"].values)
+
+        case "RWRF":
+            data = np.squeeze(ds["PBLH"].values)
+            nc_key = "PBLH"
+
+        case _:
+            data = np.nan
+            nc_key = "PBLH"
+
+    return _create_dataarray(data, ds, nc_key, "Planetary Boundary Layer Height", "m")
+
+
+def diag_RAINNC(source_dataset: str, ds: xr.Dataset) -> xr.DataArray:
+    """
+    Total Precipitation
+
+    """
+
+    match source_dataset:
+
+        case "ERA5":
+            data = np.squeeze(ds["tp"].values)
+
+        case "RWRF":
+            data = np.squeeze(ds["RAINNC"].values)
+            nc_key = "RAINNC"
+
+        case _:
+            data = np.nan
+            nc_key = "RAINNC"
+
+    return _create_dataarray(data, ds, nc_key, "Total Precipitation", "m")
+
+
+def diag_SWDOWN(source_dataset: str, ds: xr.Dataset) -> xr.DataArray:
+    """
+    Downward shortwave radiation at surface
+
+    """
+
+    match source_dataset:
+
+        case "ERA5":
+            data = np.squeeze(ds["ssrd"].values) / 3600
+
+        case "RWRF":
+            data = np.squeeze(ds["SWDOWN"].values)
+            nc_key = "SWDOWN"
+
+        case _:
+            data = np.nan
+            nc_key = "SWDOWN"
+
+    return _create_dataarray(data, ds, nc_key, "Surface Shortwave Downward Radiation", "W m-2")
+
+
+def diag_OLR(source_dataset: str, ds: xr.Dataset) -> xr.DataArray:
+    """
+    Outward longwave radiation at TOA
+
+    """
+
+    match source_dataset:
+
+        case "ERA5":
+            data = np.squeeze(ds["ttr"].values) / 3600
+
+        case "RWRF":
+            data = np.squeeze(ds["OLR"].values)
+            nc_key = "OLR"
+
+        case _:
+            data = np.nan
+            nc_key = "OLR"
+
+    return _create_dataarray(data, ds, nc_key, "Outgoing Longwave Radiation", "W m-2")
+
+
+def diag_REFL(source_dataset: str, ds: xr.Dataset) -> xr.DataArray:
+    """
+    Emulated Radar Reflectivity
+
+    """
+
+    match source_dataset:
+
+        case "ERA5":
+            tmk = np.squeeze(ds["t"].values)
+            qvp = np.squeeze(ds["q"].values)/(1-np.squeeze(ds["q"].values))
+            qra = np.squeeze(ds["crwc"].values/(1-ds["crwc"].values))
+            qsn = np.squeeze(ds["cswc"].values/(1-ds["cswc"].values))
+            qgr = np.zeros(np.shape(tmk))
+            prs = np.zeros(np.shape(tmk))
+            plev = np.squeeze(ds["pres_levels"].values)
+            for pl in range(len(plev)):
+                prs[pl,:,:] = (plev[pl] * 100)
+
+        case "RWRF":
+            tmk = np.squeeze(ds["tk_p"].values)
+            qvp = np.squeeze(ds["QVAPOR_p"].values)
+            qra = np.squeeze(ds["QRAIN_p"].values)
+            qsn = np.squeeze(ds["QSNOW_p"].values)
+            qgr = np.squeeze(ds["QGRAUP_p"].values)
+            prs = np.zeros(np.shape(tmk))
+            plev = np.squeeze(ds["pres_levels"].values)
+            for pl in range(len(plev)):
+                prs[pl,:,:] = (plev[pl] * 100.0)
+
+        case _:
+            template_shape = ds["t" if "t" in ds else "tk_p"].values.shape
+            data = np.full(np.squeeze(template_shape), np.nan)
+            nc_key = "REFL"
+            return _create_dataarray(data, ds, nc_key, "Emulated Radar Reflectivity", "dBZ")
+
+    sn0 = 1
+    ivarint = 1
+    qvp = np.maximum(qvp, 0)
+    qra = np.maximum(qra, 0)
+    qsn = np.maximum(qsn, 0)
+    qgr = np.maximum(qgr, 0)
+
+    if sn0 == 1:
+        mask = tmk < 273.15
+        qsn[mask] = qra[mask]
+        qra[mask] = 0
+
+    virtual_t = tmk * (1 + 0.61 * qvp)
+
+    rhoair = prs / (287.04 * virtual_t) # prs_val.values 假設可以自動廣播
+
+    factor_r = 720 * 1e18 * (1 / (np.pi * 1000))**1.75
+    factor_s = factor_r * (0.224 * (100 / 1000)**2)
+    factor_g = factor_r * (0.224 * (400 / 1000)**2)
+
+    z_e = (factor_r * (rhoair * qra)**1.75 / (8e6 if ivarint == 0 else 1e10)**0.75 +
+           factor_s * (rhoair * qsn)**1.75 / (2e7 if ivarint == 0 else 2e8)**0.75 +
+           factor_g * (rhoair * qgr)**1.75 / (4e6 if ivarint == 0 else 5e7)**0.75)
+
+    data = 10 * np.log10(np.maximum(z_e, 0.001))
+
+    return _create_dataarray(data, ds, "REFL", "Emulated Radar Reflectivity", "dBZ")
+
+def diag_MAX_REFL(source_dataset: str, ds: xr.Dataset) -> xr.DataArray:
+    """
+    Emulated Column Maximum Radar Reflectivity
+    """
+    REFL = diag_REFL(source_dataset, ds)
+    # The dimensions of REFL.values are (Time, pres_bottom_top, south_north, west_east)
+    # We take the maximum over the pressure level axis (axis=1)
+    _, nl, ny, nx = np.shape(REFL.values)
+
+    data =  np.max(np.reshape(REFL.values, (nl, ny, nx)), axis=0)
+    nc_key = "MAX_REFL"
+
+    return _create_dataarray(data, ds, nc_key, "Emulated Column Maximum Radar Reflectivity", "dBZ")
+
+
+```
+
+### `src/registry/diagnostic_registry.py`
+
+```python
+import importlib
+import yaml
+
+def load_diagnostics(yaml_path):
+    with open(yaml_path, "r") as f:
+        cfg = yaml.safe_load(f)
+    
+    reg_cfg = cfg["registry"]["varname"] #.get("varname", "")
+    diagnostics = {}
+
+    for name, item in reg_cfg.items():
+        func_name = item["function"]
+        module = importlib.import_module("src.registry.diagnostic_functions")
+        func = getattr(module, func_name)
+        diagnostics[name] = {
+            "requires": item["requires"],
+            "function": func,
+        }
+    return diagnostics
+
+def sort_diagnostics_by_dependencies(diagnostics):
+    sorted_list = []
+    visited = set()
+
+    def visit(var):
+        if var in visited:
+            return
+        for dep in diagnostics[var]["requires"]:
+            if dep in diagnostics:
+                visit(dep)
+        sorted_list.append(var)
+        visited.add(var)
+
+    for var in diagnostics:
+        visit(var)
+
+    return sorted_list
+
+
+```
+
+### `src/workflow/global_op.py`
+
+```python
+#! src/workflow/global_op.py
+from datetime import datetime, timedelta
+import logging
+import yaml
+
+import xarray as xr
+import numpy as np
+
+from earth2studio.data import GFS
+from earth2studio.models.px import SFNO
+from earth2studio.io import NetCDF4Backend
+
+log = logging.getLogger(__name__)
+
+class GlobalOps:
+    def __init__(self, cfg_path: str):
+        with open("./config/sfno.yaml", "r") as f:
+            self.cfg = yaml.safe_load(f)
+
+        sfno_pkg = SFNO.load_default_package()
+        self.sfno_model = SFNO.load_model(sfno_pkg)
+
+        self.datasource = GFS()
+        self.io_backend = NetCDF4Backend(f"{self.cfg['io']['dir']}/{self.cfg['io']['prefix']}.nc")
+
+    def one_way_run(self, start_time: datetime, lead_time: int):
+        log.info(f"Starting one-way run from {start_time} with lead time {lead_time}")
+        # Implement the one-way run logic here
+        pass
+
+    def two_way_run(self, start_time: datetime, lead_time: int, assimilation_interval: int):
+        log.info(f"Starting two-way run from {start_time} with lead time {lead_time} and assimilation interval {assimilation_interval}")
+        # Implement the two-way run logic here
+        pass    
+
+
+```
+
+### `src/workflows/data_processing.py`
+
+```python
+# src/workflows/data_processing.py
+import yaml
+import os
+from datetime import datetime, timedelta
+from earth2studio.data import GFS
+import xarray as xr
+import numpy as np
+from scipy.interpolate import griddata
+
+# Add project root to the Python path to allow importing from src
+import sys
+project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.append(project_root)
+
+from src.registry.diagnostic_registry import load_diagnostics, sort_diagnostics_by_dependencies
+
+def _interpolate_with_fallback(points, values, xi):
+    """
+    Perform linear interpolation with a nearest-neighbor fallback for NaN values.
+    """
+    grid_linear = griddata(points, values, xi, method="linear")
+    nan_mask = np.isnan(grid_linear)
+    if np.any(nan_mask):
+        grid_nearest = griddata(points, values, xi, method="nearest")
+        grid_linear[nan_mask] = grid_nearest[nan_mask]
+    return grid_linear
+
+def regrid_data(source_da: xr.DataArray, target_lon: np.ndarray, target_lat: np.ndarray) -> xr.Dataset:
+    """
+    Regrids a source DataArray to a target grid defined by target_lon and target_lat.
+    """
+    # Prepare source grid
+    source_lon = source_da['lon'].values
+    source_lat = source_da['lat'].values
+    if source_lon.ndim == 1 and source_lat.ndim == 1:
+        source_lon, source_lat = np.meshgrid(source_lon, source_lat)
+    
+    points = np.vstack((source_lon.ravel(), source_lat.ravel())).T
+    
+    # Prepare target grid
+    xi = (target_lon.ravel(), target_lat.ravel())
+    
+    regridded_vars = {}
+    # Use a dictionary to build the new dataset to avoid repeated concatenation
+    for var_name in source_da['variable'].values:
+        print(f"Regridding variable: {var_name}")
+        source_var_data = source_da.sel(variable=var_name).values.ravel()
+        
+        # Interpolate
+        interp_data = _interpolate_with_fallback(points, source_var_data, xi)
+        regridded_var = np.reshape(interp_data, target_lon.shape)
+        
+        regridded_vars[var_name] = (('south_north', 'west_east'), regridded_var)
+
+    # Create the Dataset
+    regridded_ds = xr.Dataset(
+        regridded_vars,
+        coords={
+            'XLONG': (('south_north', 'west_east'), target_lon),
+            'XLAT': (('south_north', 'west_east'), target_lat)
+        }
+    )
+    return regridded_ds
+
+def run_diagnostics(ds: xr.Dataset, config_path: str, config: dict) -> xr.Dataset:
+    """
+    Runs diagnostic calculations on the dataset.
+    """
+    diagnostics = load_diagnostics(config_path)
+    ordered_vars = sort_diagnostics_by_dependencies(diagnostics)
+    source_dataset_type = config.get("registry", {}).get("source_dataset", "GFS")
+
+    output_ds = ds.copy()
+
+    for var in ordered_vars:
+        if var not in diagnostics:
+            continue
+
+        info = diagnostics[var]
+        requires = info["requires"]
+        diag_func = info["function"]
+
+        if all(req in output_ds.data_vars or req in output_ds.coords for req in requires):
+            print(f"[DIAGNOSE] Calculating diagnostic: {var}")
+            try:
+                diagnostic_dataarray = diag_func(source_dataset_type, output_ds)
+                output_ds[var] = diagnostic_dataarray
+            except Exception as e:
+                print(f"[ERROR] Failed to calculate diagnostic {var}: {e}")
+        else:
+            missing = [req for req in requires if req not in output_ds.data_vars and req not in output_ds.coords]
+            print(f"[WARN] Missing required inputs for diagnostic {var}: {missing}. Skipping.")
+            
+    return output_ds
+
+def main(config, config_path, target_lon=None, target_lat=None):
+    """
+    Main function for the data processing workflow.
+    """
+    print("Executing data processing workflow.")
+    
+    # 1. Load configuration
+    data_source_name = config.get("data_source", {}).get("name", "").lower()
+    time_control = config["share"]["time_control"]
+    regrid_config = config["regrid"]
+    io_config = config["share"]["io_control"]
+    
+    # Load target grid if not provided
+    if target_lon is None or target_lat is None:
+        print("Loading target grid from file.")
+        with xr.open_dataset(regrid_config["target_nc"], autoclose=True) as target_ds:
+            target_lon = target_ds[regrid_config["target_lon"]].squeeze().values
+            target_lat = target_ds[regrid_config["target_lat"]].squeeze().values
+    
+    start_time = datetime.strptime(time_control["start"], time_control["format"])
+    end_time = datetime.strptime(time_control["end"], time_control["format"])
+    time_step_hours = time_control["base_step_hours"]
+    
+    current_time = start_time
+    
+    # 2. Initialize data source
+    if data_source_name == "gfs":
+        source_options = config.get("data_source", {})
+        data_source = GFS(
+            source=source_options.get("source", "aws"),
+            cache=source_options.get("cache", True)
+        )
+        print(f"Initialized data source: {data_source_name}")
+    else:
+        raise ValueError(f"Unsupported data source: {data_source_name}")
+
+    # 3. Fetch and process data for each timestep
+    while current_time <= end_time:
+        print(f"Processing time: {current_time}")
+        
+        try:
+            # Fetch data
+            variables = config["data_source"]["variables"]
+            data_da = data_source(time=[current_time], variable=variables)
+            print(f"Successfully fetched data for {current_time}")
+
+            # Regrid data
+            regridded_ds = regrid_data(data_da.squeeze('time'), target_lon, target_lat)
+            print(f"Successfully regridded data for {current_time}")
+
+            # Run diagnostics
+            diagnosed_ds = run_diagnostics(regridded_ds, config_path, config)
+            print(f"Successfully ran diagnostics for {current_time}:")
+            print(diagnosed_ds)
+
+            # Save output
+            output_dir = os.path.join(io_config["base_dir"], io_config["netcdf_subdir"])
+            os.makedirs(output_dir, exist_ok=True)
+            timestamp = current_time.strftime(io_config["prefix"]["timestr_fmt"])
+            output_filename = f"{io_config['prefix']['output']}_{timestamp}.nc"
+            output_path = os.path.join(output_dir, output_filename)
+            
+            diagnosed_ds.to_netcdf(output_path, format="NETCDF4")
+            print(f"Successfully saved output to {output_path}")
+
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            print(f"Failed to process data for {current_time}: {e}")
+        
+        current_time += timedelta(hours=time_step_hours)
+
+    print("Data processing workflow finished.")
+```
+
+### `src/workflows/sfno_forecast.py`
+
+```python
+# src/workflows/sfno_forecast.py
+import yaml
+import os
+from datetime import datetime, timedelta
+import xarray as xr
+from earth2studio.models.px import SFNO
+
+# Add project root to the Python path
+import sys
+project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.append(project_root)
+
+from src.workflows import data_processing
+
+def main(config, config_path):
+    """
+    Main function for the SFNO forecast workflow.
+    """
+    print("Executing SFNO forecast workflow.")
+    
+    # 1. Load configuration
+    time_control = config["share"]["time_control"]
+    ic_config_path = config["initial_condition"]["config"]
+    
+    # 2. Fetch initial condition using the data_processing workflow
+    print(f"Fetching initial condition using config: {ic_config_path}")
+    with open(ic_config_path, 'r') as f:
+        ic_config = yaml.safe_load(f)
+    
+    # Load the target grid once
+    regrid_config = ic_config["regrid"]
+    with xr.open_dataset(regrid_config["target_nc"], autoclose=True) as target_ds:
+        target_lon = target_ds[regrid_config["target_lon"]].squeeze().values
+        target_lat = target_ds[regrid_config["target_lat"]].squeeze().values
+
+    # Run the data processing workflow, passing in the pre-loaded target grid
+    data_processing.main(ic_config, ic_config_path, target_lon=target_lon, target_lat=target_lat)
+    
+    # Construct the path to the initial condition file
+    start_time = datetime.strptime(time_control["start"], time_control["format"])
+    ic_io_config = ic_config["share"]["io_control"]
+    timestamp = start_time.strftime(ic_io_config["prefix"]["timestr_fmt"])
+    ic_filename = f"{ic_io_config['prefix']['output']}_{timestamp}.nc"
+    ic_path = os.path.join(ic_io_config["base_dir"], ic_io_config["netcdf_subdir"], ic_filename)
+    
+    print(f"Loading initial condition from: {ic_path}")
+    initial_condition_ds = xr.open_dataset(ic_path)
+    
+    # 3. Transform initial condition data into SFNO's required DataArray format (Placeholder)
+    print("Transforming initial condition for SFNO... (Not yet implemented)")
+    # This will involve selecting the 73 variables and stacking them.
+    
+    # 4. Load the SFNO model
+    print("Loading SFNO model...")
+    try:
+        model = SFNO.from_pretrained() # Using a default SFNO model
+        print("SFNO model loaded successfully.")
+    except Exception as e:
+        print(f"Failed to load SFNO model: {e}")
+        return
+
+    # 5. Forecast loop (Placeholder)
+    print("Starting forecast loop... (Not yet implemented)")
+    
+    forecast_steps = time_control["forecast_steps"]
+    current_time = start_time
+    for i in range(forecast_steps):
+        print(f"Forecasting step {i+1}/{forecast_steps} for time {current_time}")
+        
+        # a. (Task 3) Blending (Not yet implemented)
+        # b. Run SFNO model (Not yet implemented)
+        # c. Post-process output (Not yet implemented)
+        # d. Run diagnostics (Not yet implemented)
+        # e. Save output (Not yet implemented)
+        
+        current_time += timedelta(hours=time_control["forecast_step_hours"])
+
+    print("SFNO forecast workflow finished.")
+```
