@@ -1,0 +1,185 @@
+share:
+  exp_code: "SFNO_FANAPI"                 # Experiment code
+  data_path: ${DATA_PATH}                 # Data path (environment variable)
+  time_control:                           # Time Control
+    start: "2024-10-01_00:00"            # Forecast initialization time
+    end: "2024-10-03_00:00"              # Forecast end time
+    format: "%Y-%m-%d_%H:%M"             # Time format
+    base_step_hours: 1                   # Output timestep in hours
+  io_control:                            # I/O Control
+    base_dir: "/path/to/DLAMP_model/DLAMP.data/"
+    sfno_raw_subdir: "./sfno_raw"       # Raw SFNO forecast output
+    netcdf_subdir: "./ncdb/Pool"        # Converted netCDF files
+    grib_subdir: "./grib"               # Optional: if GRIB output needed
+    npy_subdir: "./npy"                 # Optional: numpy arrays
+    prefix:
+      sfno_upper: "sfnopl"              # Prefix for SFNO pressure level data
+      sfno_surface: "sfnosl"            # Prefix for SFNO surface data
+      regrid: "sfnoregrid"              # Prefix for regridded data
+      output: "sfnodlamp"               # Prefix for final output
+      timestr_fmt: "%Y%m%d_%H%M"        # Time string format
+
+# SFNO Model Configuration
+sfno:
+  initial_condition_source: "GFS"       # Options: "GFS", "CDS"
+  model_step_hours: 6                   # SFNO native output interval
+  output_variables:                     # Variables to extract from SFNO
+    pressure_level:
+      - "z"                             # Geopotential
+      - "t"                             # Temperature
+      - "u"                             # U-component of wind
+      - "v"                             # V-component of wind
+      - "q"                             # Specific humidity
+      - "w"                             # Vertical velocity (omega)
+    surface:
+      - "t2m"                           # 2m temperature
+      - "d2m"                           # 2m dewpoint
+      - "u10"                           # 10m u-wind
+      - "v10"                           # 10m v-wind
+      - "sp"                            # Surface pressure
+      - "msl"                           # Mean sea level pressure
+      - "tp"                            # Total precipitation
+      - "tcwv"                          # Total column water vapor
+  
+  # Variable name mapping: SFNO -> ERA5 convention
+  variable_mapping:
+    z: "z"
+    t: "t"
+    u: "u"
+    v: "v"
+    q: "q"
+    w: "w"
+    t2m: "2t"
+    d2m: "2d"
+    u10: "10u"
+    v10: "10v"
+    sp: "sp"
+    msl: "msl"
+    tp: "tp"
+    tcwv: "tcwv"
+
+# Regridding Configuration (same as ERA5)
+regrid:
+  target_nc: "./assets/target.nc"
+  target_lat: "XLAT"
+  target_lon: "XLONG"
+  target_pres: "pres_levels"
+  source_lat: "lat"
+  source_lon: "lon"
+  source_pres: "plev"
+  levels: [1000, 975, 950, 925, 900,
+           875, 850, 825, 800, 775,
+           750, 700, 650, 600, 550,
+           500, 450, 400, 350, 300,
+           250, 225, 200, 175, 150,
+           125, 100, 70, 50, 30, 20]
+  adopted_varlist: ["XLONG", "XLAT", "pres_levels", "HGT", "LANDMASK"]
+  write_regrid: False                   # Save intermediate regridded data
+
+# Variable Registry for Diagnostics
+# Same as ERA5 since we convert SFNO to ERA5-like format
+registry:
+  source_dataset: "SFNO"                # Dataset identifier for diagnostic functions
+  varname:
+    z_p:
+      requires: ['z']
+      function: diag_z_p
+    
+    tk_p:
+      requires: ['t']
+      function: diag_tk_p
+    
+    umet_p:
+      requires: ['u']
+      function: diag_umet_p
+    
+    vmet_p:
+      requires: ['v']
+      function: diag_vmet_p
+    
+    QVAPOR_p:
+      requires: ['q']
+      function: diag_QVAPOR_p
+    
+    wa_p:
+      requires: ['w', 't', 'q', 'pres_levels']
+      function: diag_wa_p
+    
+    # Note: SFNO may not output hydrometeor fields directly
+    # These would need to be derived or set to zero
+    QRAIN_p:
+      requires: ['q']  # Placeholder - SFNO doesn't output this
+      function: diag_QRAIN_p
+    
+    QSNOW_p:
+      requires: ['q']  # Placeholder
+      function: diag_QSNOW_p
+    
+    QGRAUP_p:
+      requires: ['q']  # Placeholder
+      function: diag_QGRAUP_p
+    
+    QCLOUD_p:
+      requires: ['q']  # Placeholder
+      function: diag_QCLOUD_p
+    
+    QICE_p:
+      requires: ['q']  # Placeholder
+      function: diag_QICE_p
+    
+    QTOTAL_p:
+      requires: ['q']  # Sum of hydrometeors
+      function: diag_QTOTAL_p
+    
+    T2:
+      requires: ['2t']
+      function: diag_T2
+    
+    Q2:
+      requires: ['2d', 'sp']
+      function: diag_Q2
+    
+    rh2:
+      requires: ['2t', '2d', 'sp']
+      function: diag_rh2
+    
+    td2:
+      requires: ['2d']
+      function: diag_td2
+    
+    umet10:
+      requires: ['10u']
+      function: diag_umet10
+    
+    vmet10:
+      requires: ['10v']
+      function: diag_vmet10
+    
+    slp:
+      requires: ['msl']
+      function: diag_slp
+    
+    PSFC:
+      requires: ['sp']
+      function: diag_PSFC
+    
+    pw:
+      requires: ['tcwv']
+      function: diag_pw
+    
+    RAINNC:
+      requires: ['tp']
+      function: diag_RAINNC
+
+# Two-way Feedback Configuration (Future Feature)
+feedback:
+  enabled: False                        # Enable two-way nesting
+  update_frequency_hours: 6             # How often to update global from regional
+  blending_method: "linear"             # Options: "linear", "cosine", "relaxation"
+  blending_zone_width_km: 100           # Width of transition zone at boundaries
+  feedback_variables:                   # Variables to feed back to global model
+    - "t"
+    - "q"
+    - "u"
+    - "v"
+  regional_domain_buffer_km: 50         # Buffer zone around regional domain
