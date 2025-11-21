@@ -1,0 +1,122 @@
+
+common_settings:
+  output_base_dir: "output/production_run"
+  device: "cpu"
+  target_date: "2023-01-01"
+  target_time: "00:00"
+
+resources:
+  # Paths define where data flows
+  era5_dir: "ncdb/era5"
+  model_weights: "sfno_weights.pkl" # Placeholder
+
+workflows:
+  full_forecast_cycle:
+    steps:
+      # --- Phase 1: Data Acquisition (ERA5) ---
+      - name: "Initialize ERA5 Manager"
+        module: "src.op.era5_reanalysis"
+        class: "ERA5DataManager"
+        action: "instantiate"
+        args:
+          output_dir: "{resources.era5_dir}"
+        output_key: "era5_manager"
+
+      - name: "Download and Merge ERA5 Data"
+        instance_key: "era5_manager"
+        action: "prepare_model_input"
+        args:
+          datetime_str: "2023010100"
+          filename_prefix: "initial_condition"
+          sl_request:
+            product_type: 'reanalysis'
+            format: 'grib'
+            variable: ['2m_temperature', 'mean_sea_level_pressure']
+            year: '2023'
+            month: '01'
+            day: '01'
+            time: '00:00'
+          pl_request:
+            product_type: 'reanalysis'
+            format: 'grib'
+            variable: ['geopotential', 'temperature']
+            pressure_level: ['1000', '850', '500']
+            year: '2023'
+            month: '01'
+            day: '01'
+            time: '00:00'
+        output_key: "raw_input_file"
+
+      # --- Phase 2: Global Model Initialization ---
+      - name: "Initialize Model Loader"
+        module: "src.op.global_operators"
+        class: "ModelLoader"
+        action: "instantiate"
+        args:
+          device: "{common_settings.device}"
+        output_key: "loader"
+
+      - name: "Load Raw Input Data"
+        instance_key: "loader"
+        action: "load_nc_file"
+        args:
+          path: "{raw_input_file}"
+        output_key: "ds_raw"
+
+      # --- Phase 3: Preprocessing (Regridding) ---
+      - name: "Initialize Regridder Pipeline"
+        module: "src.op.regridders"
+        class: "DataPreparationPipeline"
+        action: "instantiate"
+        args:
+          config:
+            var_map: {{'2t': 't2m', 'z': 'geopotential'}}
+            time_target_freq: '1H'
+        output_key: "preprocessor"
+
+      # Note: In a real run, we need a target grid dataset. 
+      # For this demo, we assume ds_raw acts as its own target or is handled internally.
+      - name: "Execute Preprocessing"
+        instance_key: "preprocessor"
+        action: "run"
+        args:
+          source_ds: "{ds_raw}"
+          target_grid_ds: "{ds_raw}" # Simplification for demo
+        output_key: "ds_ready"
+
+      # --- Phase 4: Inference (Loop) ---
+      # Note: We skip actual SFNO loading here to avoid needing heavy weights, 
+      # but we set up the InferenceEngine structure.
+      - name: "Initialize Inference Engine (Mock)"
+        module: "src.op.global_operators"
+        class: "InferenceEngine"
+        action: "instantiate"
+        args:
+          model: "{loader}" # Passing loader as a dummy model object for structure test
+        output_key: "inference_engine"
+
+      # --- Phase 5: Diagnostics & Export (Nested in Loop) ---
+      # Note: Since we don't have a real model running, we won't run the iterator.
+      # But this defines how it connects.
+      - name: "Initialize Data Exporter"
+        module: "src.op.global_operators"
+        class: "DataExporter"
+        action: "instantiate"
+        args:
+          output_dir: "{common_settings.output_base_dir}"
+        output_key: "exporter"
+
+      - name: "Run Diagnostics on Initial State (Test)"
+        module: "src.op.diagnostics"
+        action: "run_diagnostics"
+        args:
+          ds: "{ds_ready}"
+        output_key: "ds_diag"
+        
+      - name: "Save Diagnostic Output"
+        instance_key: "exporter"
+        action: "save"
+        args:
+          ds: "{ds_diag}"
+          prefix: "diag_output"
+    
