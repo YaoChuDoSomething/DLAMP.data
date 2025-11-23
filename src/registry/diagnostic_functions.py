@@ -262,7 +262,7 @@ def diag_QGRAUP_p(source_dataset: str, ds: xr.Dataset) -> xr.DataArray:
     return _create_dataarray(data, ds, "QGRAUP_p", "Graupel Water Mixing Ratio", "kg kg-1")
 
 
-def diag_QWATER_p(source_dataset: str, ds: xr.Dataset) -> xr.DataArray:
+def diag_QTOTAL_p(source_dataset: str, ds: xr.Dataset) -> xr.DataArray:
     """
     Total hydrometeors mixing ratio
     
@@ -285,7 +285,7 @@ def diag_QWATER_p(source_dataset: str, ds: xr.Dataset) -> xr.DataArray:
         case _:
             data = np.nan
     
-    return _create_dataarray(data, ds, "QWATER_p", "Total Hydrometeors Mixing Ratio", "kg kg-1")
+    return _create_dataarray(data, ds, "QTOTAL_p", "Total Hydrometeors Mixing Ratio", "kg kg-1")
 
 
 def diag_wa_p(source_dataset: str, ds: xr.Dataset) -> xr.DataArray:
@@ -615,7 +615,7 @@ def diag_OLR(source_dataset: str, ds: xr.Dataset) -> xr.DataArray:
     return _create_dataarray(data, ds, "OLR", "Outgoing Longwave Radiation", "W m-2") 
 
 
-def diag_mREFL(source_dataset: str, ds: xr.Dataset) -> xr.DataArray:
+def diag_REFL_p(source_dataset: str, ds: xr.Dataset) -> xr.DataArray:
     """ 
     dew-point temperature at 2 m height above surface
     
@@ -676,4 +676,4 @@ def diag_mREFL(source_dataset: str, ds: xr.Dataset) -> xr.DataArray:
     
     data = np.max(dbz, axis=0)
     
-    return _create_dataarray(data, ds, "mREFL", "Emulated Column Maximum Radar Reflectivity", "dBZ")
+    return _create_dataarray(data, ds, "REFL_p", "Emulated Radar Reflectivity", "dBZ")

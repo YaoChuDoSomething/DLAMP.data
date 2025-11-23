@@ -2,16 +2,16 @@ share:
   exp_code: "E5_FANAPI"                   # EXP_CODE
   data_path: ${DATA_PATH}                 # DATA_PATH: (AbsPath)
   time_control:                           # Time Control =====
-    start: "2020-05-21_10:00"             # start time
-    end: "2020-05-21_10:00"               # end time
+    start: "2010-09-18_18:00"             # start time
+    end: "2010-09-20_00:00"               # end time
     format: "%Y-%m-%d_%H:%M"              # the format to describe time
-    base_step_hours: 1                    # a single time step in hour 
+    base_step_hours: 6                    # a single time step in hour 
   io_control:                             # I/O Control =====
     # Project Prefix: (AbsPATH)
-    base_dir: "/wk2/yaochu/CWA_Tutorial/DLAMP.data_v25.07"
+    base_dir: "./"
     # Output subdirectories for grib / netcdf / npy data (PATH)
-    grib_subdir: "./data/grib"        
-    netcdf_subdir: "./data/ncdb/Meiyu_2020"
+    grib_subdir: "data/grib"        
+    netcdf_subdir: "./data/ncdb"
     npy_subdir: "./data/npy"
     # Filename naming convention
     prefix:                           
@@ -24,11 +24,6 @@ share:
 
 # "download" section to initialize ".src.cds_downloader.CDSDataDownloader"
 download: 
-  area:                                   # Domain Control =====
-    north: 31                             # north bounds in latitudes
-    south: 17                             # south bounds in latitudes
-    west: 114                             # west bounds in longitudes
-    east: 128                             # east bounds in longitudes
   dataset_upper:
     title: "reanalysis-era5-pressure-levels"
     levels: [1000, 975, 950, 925, 900,
@@ -48,10 +43,7 @@ download:
       - 'specific_humidity'                    # QVAPOR_p = q/(1-q)
       - 'specific_rain_water_content'          # QRAIN_p = crwc/(1-crwc)
       - 'specific_snow_water_content'          # QSNOW_p = cswc/(1-cswc)
-      - 'divergence'
-      - 'potential_vorticity'
       - 'vertical_velocity'                    # wa_p = w*287.05 *(t*(0.622+qvp)/(0.622*(1+qvp)))/prs/g
-      - 'vorticity'
   dataset_surface:
     title: "reanalysis-era5-single-levels"
     variables:
@@ -64,15 +56,12 @@ download:
       - 'surface_pressure'                     # PSFC = sp
       - 'total_precipitation'                  # RAINNC = tp
       - 'boundary_layer_height'                # PBLH = blh
-      - 'skin_temperature'
       - 'total_column_water_vapour'            # pw = tcwv
-      - 'mean_surface_downward_short_wave_radiation_flux'
-      - 'mean_top_net_long_wave_radiation_flux'
       - 'surface_solar_radiation_downwards'    # SWDOWN
-      - 'toa_incident_solar_radiation'         # S0
       - 'top_net_thermal_radiation'            # OLR
 
 regrid:
+  output_step_hours: 1                  # the desired output time step in hour
   target_nc: "./assets/rwrf_out.nc"         
   target_lat: "XLAT"
   target_lon: "XLONG"
@@ -138,9 +127,9 @@ registry:
       requires: ['ciwc']
       function: diag_QICE_p
       
-    QWATER_p:
+    QTOTAL_p:
       requires: ['clwc', 'crwc', 'cswc', 'ciwc']
-      function: diag_QWATER_p
+      function: diag_QTOTAL_p
 
     T2:
       requires: ['2t']
@@ -165,6 +154,14 @@ registry:
     vmet10:
       requires: ['10v']
       function: diag_vmet10
+
+    umet100:
+      requires: ['100u']
+      function: diag_umet100
+
+    vmet100:
+      requires: ['100v']
+      function: diag_vmet100
 
     slp:
       requires: ['msl']
@@ -198,6 +195,10 @@ registry:
       requires: ['ttr']
       function: diag_OLR
 
-    mREFL:
+    REFL_p:
       requires: ['t', 'pres_levels', 'q', 'crwc', 'cswc']
-      function: diag_mREFL
+      function: diag_REFL_p
+
+    MAX_REFL:
+      requires: ['t', 'pres_levels', 'q', 'crwc', 'cswc']
+      function: diag_MAX_REFL

@@ -1,0 +1,169 @@
+&parameter
+  name=_default_
+  datatype=F32
+/
+&parameter
+  name=z
+  param=129.128
+  standard_name=geopotential
+  long_name="Geopotential"
+  units="m**2 s**-2"
+  chunkType=grid
+/
+&parameter
+  name=t
+  param=130.128
+  standard_name=air_temperature
+  long_name="Temperature"
+  units="K"
+  chunkType=grid
+/
+&parameter
+  name=u
+  param=131.128
+  standard_name=eastward_wind
+  long_name="U component of wind"
+  units="m s**-1"
+  chunkType=grid
+/
+&parameter
+  name=v
+  param=132.128
+  standard_name=northward_wind
+  long_name="V component of wind"
+  units="m s**-1"
+  chunkType=grid
+/
+&parameter
+  name=ciwc
+  param=247.128
+  long_name="Specific cloud ice water content"
+  units="kg kg**-1"
+  chunkType=grid
+/
+&parameter
+  name=clwc
+  param=246.128
+  long_name="Specific cloud liquid water content"
+  units="kg kg**-1"
+  chunkType=grid
+/
+&parameter
+  name=q
+  param=133.128
+  standard_name=specific_humidity
+  long_name="Specific humidity"
+  units="kg kg**-1"
+  chunkType=grid
+/
+&parameter
+  name=crwc
+  param=75.128
+  long_name="Specific rain water content"
+  units="kg kg**-1"
+  chunkType=grid
+/
+&parameter
+  name=cswc
+  param=76.128
+  long_name="Specific snow water content"
+  units="kg kg**-1"
+  chunkType=grid
+/
+&parameter
+  name=w
+  param=135.128
+  standard_name=lagrangian_tendency_of_air_pressure
+  long_name="Vertical velocity"
+  units="Pa s**-1"
+  chunkType=grid
+/
+&parameter
+  name=10u
+  param=165.128
+  long_name="10 metre U wind component"
+  units="m s**-1"
+  chunkType=grid
+/
+&parameter
+  name=10v
+  param=166.128
+  long_name="10 metre V wind component"
+  units="m s**-1"
+  chunkType=grid
+/
+&parameter
+  name=2d
+  param=168.128
+  long_name="2 metre dewpoint temperature"
+  units="K"
+  chunkType=grid
+/
+&parameter
+  name=2t
+  param=167.128
+  long_name="2 metre temperature"
+  units="K"
+  chunkType=grid
+/
+&parameter
+  name=msl
+  param=151.128
+  standard_name=air_pressure_at_mean_sea_level
+  long_name="Mean sea level pressure"
+  units="Pa"
+  chunkType=grid
+/
+&parameter
+  name=sst
+  param=34.128
+  long_name="Sea surface temperature"
+  units="K"
+  chunkType=grid
+/
+&parameter
+  name=sp
+  param=134.128
+  standard_name=surface_air_pressure
+  long_name="Surface pressure"
+  units="Pa"
+  chunkType=grid
+/
+&parameter
+  name=tp
+  param=228.128
+  long_name="Total precipitation"
+  units="m"
+  chunkType=grid
+/
+&parameter
+  name=blh
+  param=159.128
+  long_name="Boundary layer height"
+  units="m"
+  chunkType=grid
+/
+&parameter
+  name=tcwv
+  param=137.128
+  standard_name=lwe_thickness_of_atmosphere_mass_content_of_water_vapor
+  long_name="Total column vertically-integrated water vapour"
+  units="kg m**-2"
+  chunkType=grid
+/
+&parameter
+  name=ssrd
+  param=169.128
+  standard_name=surface_downwelling_shortwave_flux_in_air
+  long_name="Surface short-wave (solar) radiation downwards"
+  units="J m**-2"
+  chunkType=grid
+/
+&parameter
+  name=ttr
+  param=179.128
+  standard_name=toa_outgoing_longwave_flux
+  long_name="Top net long-wave (thermal) radiation"
+  units="J m**-2"
+  chunkType=grid
+/
