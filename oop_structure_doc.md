@@ -48,6 +48,13 @@
   - 提供大量原子化的診斷函數（如 `diag_z_p`, `diag_tk_p`, `diag_rh2` 等）。
   - 內建 `_create_dataarray` 輔助函數，統一輸出 `xr.DataArray` 的維度與座標標記。
 
+### D. 變數定義規格 (`definition/`)
+
+統一專案內部的物理量符號、座標描述與 NetCDF Metadata 規範。
+
+- **`variable_spec.md`**: 定義描述命名原則 (Description)、符號規範 (Symbols) 與垂直座標標準格式。
+- **`metadata_template.json`**: 提供 NetCDF4 標準變數的 Metadata 屬性模板。
+
 ---
 
 ## 2. 專案管理狀態 (Project Management Status)
@@ -81,6 +88,9 @@ gantt
     "註冊表系統 (Registry)"        :done, diag1, 2026-01-20, 2d
     "核心診斷函數庫"               :active, diag2, after diag1, 10d
     "依賴關係拓撲排序"             :done, diag3, after diag1, 1d
+
+    section "標準化規範 (Specs)"
+    "變數符號與 Metadata 模板"     :done, spec1, 2026-01-21, 1d
     
 ```
 

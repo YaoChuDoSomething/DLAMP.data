@@ -3,7 +3,8 @@
 ## 1. Summary of Work (2026-01-21)
 
 - **OOP Documentation**: Created `oop_structure_doc.md` with detailed class definitions and interfaces for `src/core`, `src/tasks`, and `src/registry`.
-- **Refactoring Alignment**: Committed the refactored directory structure to git, including new base classes for tasks and a centralized context manager.
+- **Variable Standards**: Established `definition/` directory with `variable_spec.md` and `metadata_template.json` to standardize variable naming and NetCDF metadata.
+- **Refactoring Alignment**: Committed the refactored directory structure to git, including new base classes for tasks, a centralized context manager, and cleaned up legacy files.
 - **Visual Improvements**:
   - Generated a Gantt chart for project timeline.
   - Created a high-quality, pure HTML/CSS interactive class diagram (`class_diagram_css.html`) to overcome Mermaid rendering limitations in some environments.
@@ -12,7 +13,7 @@
 
 ### Gantt Chart (Development Status)
 
-![Gantt Chart](file:///data/dwp/bmds/oop_structure_doc.md#L57-L84)
+![Gantt Chart](file:///data/dwp/bmds/oop_structure_doc.md#L62-L89)
 
 ### Class Diagram (Interactive CSS Version)
 
@@ -23,6 +24,7 @@
 | Component | Status | Files |
 | :--- | :--- | :--- |
 | Core Framework | Completed | `src/core/context.py`, `src/core/pipeline.py` |
+| Variable Standards | Completed | `definition/variable_spec.md`, `definition/metadata_template.json` |
 | ERA5 Download | Completed | `src/tasks/download.py` |
 | Format Conversion | Completed | `src/tasks/convert.py` |
 | Spatial Regrid | Completed | `src/tasks/regrid.py` |
