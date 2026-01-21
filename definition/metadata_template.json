@@ -1,0 +1,77 @@
+{
+  "dimensions": {
+    "west_east": { "description": "relative_grid_x", "standard_name": "projection_x_coordinate", "units": "m" },
+    "south_north": { "description": "relative_grid_y", "standard_name": "projection_y_coordinate", "units": "m" },
+    "bottom_top": { "description": "vertical_levels", "standard_name": "model_level_number", "units": "1" },
+    "time": { "description": "time", "standard_name": "time", "units": "day as %Y%m%d.%f" }
+  },
+  "variables": {
+    "HGT": {
+      "description": "terrain_height",
+      "standard_name": "surface_altitude",
+      "units": "m",
+      "long_name": "Terrain Height"
+    },
+    "LANDMASK": {
+      "description": "land_mask",
+      "standard_name": "land_binary_mask",
+      "units": "1",
+      "long_name": "Land Mask (1 for land, 0 for water)"
+    },
+    "XLAT": {
+      "description": "latitude",
+      "standard_name": "latitude",
+      "units": "degree_north",
+      "long_name": "Latitude"
+    },
+    "XLONG": {
+      "description": "longitude",
+      "standard_name": "longitude",
+      "units": "degree_east",
+      "long_name": "Longitude"
+    },
+    "TT": {
+      "description": "air_temperature",
+      "standard_name": "air_temperature",
+      "units": "K",
+      "long_name": "Air Temperature"
+    },
+    "UU": {
+      "description": "x_wind_component_relative_to_grid",
+      "standard_name": "x_wind",
+      "units": "m s-1",
+      "long_name": "X-component of Wind (grid-relative)"
+    },
+    "VV": {
+      "description": "y_wind_component_relative_to_grid",
+      "standard_name": "y_wind",
+      "units": "m s-1",
+      "long_name": "Y-component of Wind (grid-relative)"
+    },
+    "UM": {
+      "description": "eastward_wind",
+      "standard_name": "eastward_wind",
+      "units": "m s-1",
+      "long_name": "Eastward Wind (earth-relative)"
+    },
+    "VM": {
+      "description": "northward_wind",
+      "standard_name": "northward_wind",
+      "units": "m s-1",
+      "long_name": "Northward Wind (earth-relative)"
+    },
+    "QV": {
+      "description": "specific_humidity",
+      "standard_name": "specific_humidity",
+      "units": "1",
+      "long_name": "Specific Humidity",
+      "comment": "mass fraction of water vapor"
+    },
+    "PSFC": {
+      "description": "surface_pressure",
+      "standard_name": "surface_air_pressure",
+      "units": "Pa",
+      "long_name": "Surface Pressure"
+    }
+  }
+}

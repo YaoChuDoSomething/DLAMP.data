@@ -1,0 +1,38 @@
+# Minimal test configuration
+share:
+  exp_code: "TEST"
+  data_path: "./test/fixtures"
+  time_control:
+    start: "2020-01-01_00:00"
+    end: "2020-01-01_06:00"
+    format: "%Y-%m-%d_%H:%M"
+    base_step_hours: 6
+  io_control:
+    base_dir: "./test/fixtures"
+    grib_subdir: "grib"
+    netcdf_subdir: "ncdb"
+    npy_subdir: "npy"
+    prefix:
+      upper: "test_upper"
+      surface: "test_surface"
+      regrid: "test_regrid"
+      output: "test_output"
+      timestr_fmt: "%Y%m%d_%H%M"
+
+regrid:
+  method: "bilinear"
+  output_step_hours: 1
+  target_nc: "./test/fixtures/target.nc"
+  target_lat: "XLAT"
+  target_lon: "XLONG"
+  source_lat: "lat"
+  source_lon: "lon"
+  levels: [1000, 925, 850, 700, 500]
+  adopted_varlist: ["XLONG", "XLAT", "pres_levels", "HGT", "LANDMASK"]
+  use_dask: false
+  crop_buffer_degrees: 2.0
+  enable_temporal_interp: true
+
+registry:
+  source_dataset: "TEST"
+  varname: {}

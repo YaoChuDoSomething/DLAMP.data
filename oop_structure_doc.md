@@ -81,6 +81,7 @@ gantt
     "註冊表系統 (Registry)"        :done, diag1, 2026-01-20, 2d
     "核心診斷函數庫"               :active, diag2, after diag1, 10d
     "依賴關係拓撲排序"             :done, diag3, after diag1, 1d
+    
 ```
 
 ---

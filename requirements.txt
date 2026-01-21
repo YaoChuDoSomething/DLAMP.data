@@ -1,0 +1,30 @@
+# main dependencies
+cdsapi
+cftime
+cfgrib
+pygrib
+cdo
+eccodes
+gdex-api-client 
+boto3
+xarray 
+netcdf4
+h5netcdf
+h5py
+scipy 
+matplotlib 
+metpy
+ipykernel
+# using jupyter-notebook or google-colab
+jupyterlab
+notebook
+
+
+# For tests 
+pytest
+ruff
+ty
+radon
+pylance
+pydantic
+
