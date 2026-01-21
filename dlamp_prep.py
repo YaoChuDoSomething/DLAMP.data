@@ -1,46 +1,30 @@
 #!/bin/python
+from src.core.context import Context
+from src.core.pipeline import Pipeline
+from src.tasks.download import ERA5Downloader
+from src.tasks.convert import GribToNetCDF
+from src.tasks.regrid import Regridder
+from src.tasks.diagnostics import Diagnostics
 
 
-###===== Workflow Control ===========================================###
-#
-###==================================================================###
+def main():
+    # 1. Initialize Context
+    config_path = "config/era5.yaml"
+    context = Context(config_path=config_path)
+    context.load_config()
 
-do_cds_downloader = 1
-do_dlamp_regridder = 0
+    # 2. Initialize Pipeline
+    pipeline = Pipeline(context)
 
+    # 3. Add Tasks (Strict Order: Download -> Convert -> Regrid -> Diagnose)
+    pipeline.add_task(ERA5Downloader())
+    pipeline.add_task(GribToNetCDF())
+    pipeline.add_task(Regridder())
+    pipeline.add_task(Diagnostics())
 
-
-###===== ERA5 Dataset Downloading ===================================###
-#   Downloading process is fully controled by YAML configure file
-###==================================================================###
-
-
-
-if do_cds_downloader == 1:
-    from src.preproc.cds_downloader import CDSDataDownloader
-
-    era5_config = f"config/era5.yaml"
-    downloader = CDSDataDownloader(era5_config)
-    timeline = downloader.create_timeline()
-    
-    for curr in timeline:
-       downloader.process_download(curr)
+    # 4. Run
+    pipeline.run()
 
 
-###===== DataRegridder and Variables Registry =======================###
-#   Data Regridding can be controled by YAML configure file
-#   Variables Registry can be controled by YAML configure file
-#   Variables Diagnostics can be controled by module script:
-#       src/registry/diagnostics_functions
-###==================================================================###
-
-if do_dlamp_regridder == 1:
-    from src.preproc.dlamp_regridder import DataRegridder
-
-    #yaml_file = f"{DLAMP_DATA_DIR}/config/era5.yaml"
-    regridder = DataRegridder(era5_config)
-    regridder.process_single_time(curr)
-    
-    #regridder.main_process()
-
-
+if __name__ == "__main__":
+    main()

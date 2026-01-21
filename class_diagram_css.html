@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BMDS OOP 結構圖 - CSS 排版</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --secondary: #64748b;
+            --accent: #f59e0b;
+            --bg: #f8fafc;
+            --card-bg: rgba(255, 255, 255, 0.9);
+            --interface-color: #10b981;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background-color: var(--bg);
+            color: var(--text-main);
+            margin: 0;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 {
+            margin-bottom: 40px;
+            font-weight: 800;
+            letter-spacing: -0.025em;
+        }
+
+        .diagram-container {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 60px;
+            max-width: 1200px;
+            width: 100%;
+        }
+
+        /* Class Card Style */
+        .class-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            width: 240px;
+            overflow: hidden;
+            transition: transform 0.2s, box-shadow 0.2s;
+            position: relative;
+            z-index: 10;
+        }
+
+        .class-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+        }
+
+        .class-header {
+            padding: 12px 16px;
+            background: #f1f5f9;
+            border-bottom: 1px solid #e2e8f0;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.95rem;
+        }
+
+        .class-header.interface {
+            background: #ecfdf5;
+            color: var(--interface-color);
+            border-bottom: 1px solid #d1fae5;
+        }
+
+        .class-content {
+            padding: 12px 16px;
+            font-size: 0.85rem;
+        }
+
+        .method {
+            color: var(--text-muted);
+            margin: 4px 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .method::before {
+            content: '+';
+            margin-right: 8px;
+            color: var(--primary);
+        }
+
+        /* Relationship Connectors */
+        .connector {
+            position: absolute;
+            background: #cbd5e1;
+            z-index: 1;
+        }
+
+        .level-row {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            width: 100%;
+            position: relative;
+        }
+
+        /* SVG Line Implementation */
+        .svg-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .line {
+            fill: none;
+            stroke: #94a3b8;
+            stroke-width: 2;
+        }
+
+        .arrowhead {
+            fill: #94a3b8;
+        }
+
+        .label {
+            position: absolute;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            background: var(--bg);
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <h1>BMDS OOP 架構可視化</h1>
+
+    <div class="diagram-container">
+        <!-- SVG lines will go here in a real dynamic app, but we use positioning for static CSS version -->
+        
+        <!-- Level 0: Global Context & Orchestrator -->
+        <div class="level-row">
+            <div class="class-card" id="context">
+                <div class="class-header">Context</div>
+                <div class="class-content">
+                    <div class="method">config: dict</div>
+                    <div class="method">load_config()</div>
+                    <div class="method">get_config()</div>
+                </div>
+            </div>
+            <div class="class-card" id="pipeline">
+                <div class="class-header">Pipeline</div>
+                <div class="class-content">
+                    <div class="method">tasks: list</div>
+                    <div class="method">add_task()</div>
+                    <div class="method">run()</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Level 1: Interface -->
+        <div class="level-row">
+            <div class="class-card" id="task">
+                <div class="class-header interface">&lt;&lt;interface&gt;&gt;<br>Task</div>
+                <div class="class-content">
+                    <div class="method">execute(context)</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Level 2: Implementations -->
+        <div class="level-row">
+            <div class="class-card">
+                <div class="class-header">ERA5Downloader</div>
+                <div class="class-content">
+                    <div class="method">execute()</div>
+                </div>
+            </div>
+            <div class="class-card">
+                <div class="class-header">GribToNetCDF</div>
+                <div class="class-content">
+                    <div class="method">execute()</div>
+                </div>
+            </div>
+            <div class="class-card">
+                <div class="class-header">Regridder</div>
+                <div class="class-content">
+                    <div class="method">execute()</div>
+                    <div class="method">perform_regrid()</div>
+                </div>
+            </div>
+            <div class="class-card">
+                <div class="class-header">Diagnostics</div>
+                <div class="class-content">
+                    <div class="method">execute()</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Simplified Connection Visualization for the user -->
+    <div style="margin-top: 50px; color: var(--text-muted); font-size: 0.8rem; text-align: center;">
+        註：此圖表使用純 CSS Flexbox 排版，結構清晰且不怕語法解析錯誤。
+    </div>
+</body>
+</html>

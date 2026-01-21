@@ -7,8 +7,13 @@ Streamlining Your Data-Driven Workflow:  Pre-processing and Post-processing Util
 Condition 1. Simple Environment Setup for DLAMP.data
 
 ```bash
-micromamba env create -n [envname] -c conda-forge python=3.11 conda python-cdo python-eccodes
-pip install -r requirement.txt
+uv init --python 3.12
+uv venv [--clear]
+source .venv/bin/activate
+
+apt install cdo eccodes ffmpeg
+uv sync
+uv sync --dev
 ```
 
 Condition 2. Environment Setup for DLAMP.tw and DLAMP.data [Experimental]
@@ -18,16 +23,17 @@ Condition 2. Environment Setup for DLAMP.tw and DLAMP.data [Experimental]
 * install onnxruntime according to your CUDA version, please check onnxruntime_official for more details.
 
 ```bash
-micromamba env create -n [envname] -c conda-forge python=3.11 conda
+uv venv --python 3.11
+source .venv/bin/activate
 
 git clone https://github.com/NVIDIA/physicsnemo && cd physicsnemo
-make install && cd ..
+uv pip install . && cd ..
 
 git clone https://github.com/Chia-Tung/DLAMP DLAMP.tw && cd DLAMP.tw
-pip install -r requirements.txt && \
-pip install hydra-core --upgrade && \
-pip install onnxruntime-gpu==1.20.0 && cd ..
+uv pip install -r requirements.txt && \
+uv pip install hydra-core --upgrade && \
+uv pip install onnxruntime-gpu==1.20.0 && cd ..
 
-git clone https://github.com/YaoChuDoSomething/DLAMP.data DLAMP.data && cd DLAMP.data && cd DLAMP.data
-pip install -r requirement.txt
+git clone https://github.com/YaoChuDoSomething/DLAMP.data DLAMP.data && cd DLAMP.data
+uv pip install -r requirement.txt
 ```

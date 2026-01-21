@@ -7,16 +7,13 @@ share:
     format: "%Y-%m-%d_%H:%M"              # the format to describe time
     base_step_hours: 6                    # a single time step in hour 
   io_control:                             # I/O Control =====
-    # Project Prefix: (AbsPATH)
-    base_dir: "./"
-    # Output subdirectories for grib / netcdf / npy data (PATH)
-    grib_subdir: "data/grib"        
-    netcdf_subdir: "./data/ncdb"
-    npy_subdir: "./data/npy"
+    grib_dir: "./data/grib"        
+    netcdf_dir: "./data/ncdb"
     # Filename naming convention
     prefix:                           
       upper: "era5pl"                     # prefix for upper data
       surface: "era5sl"                   # prefix for surface data
+      combined: "era5all"                 # prefix for merged GRIB data
       regrid: "e5regrid"                  # prefix dor regrid data
       output: "e5dlamp"                   # prefix for output data
       timestr_fmt: "%Y%m%d_%H%M"          # time string format
@@ -48,7 +45,9 @@ download:
     title: "reanalysis-era5-single-levels"
     variables:
       - '10m_u_component_of_wind'              # umet10 = \10u
-      - '10m_v_component_of_wind'              # vmet10 = \10v
+      - '10m_v_component_of_wind'              # umet10 = \10u
+      - '100m_u_component_of_wind'             # umet10 = \10u
+      - '100m_v_component_of_wind'             # vmet10 = \10v
       - '2m_dewpoint_temperature'              # td2 = \2d
       - '2m_temperature'                       # t2 = \2t
       - 'mean_sea_level_pressure'              # MSLP = msp
@@ -61,8 +60,9 @@ download:
       - 'top_net_thermal_radiation'            # OLR
 
 regrid:
+  method: "bilinear"                    # regridding method: bilinear, idw, kriging
   output_step_hours: 1                  # the desired output time step in hour
-  target_nc: "./assets/rwrf_out.nc"         
+  target_nc: "./assets/target.nc"         
   target_lat: "XLAT"
   target_lon: "XLONG"
   target_pres: "pres_levels"
@@ -78,6 +78,13 @@ regrid:
              20,]
   adopted_varlist: ["XLONG", "XLAT", "pres_levels", "HGT", "LANDMASK"]
   write_regrid: False                           # save regrid data as nc or not
+  # 效能優化設定
+  use_dask: false                               # 暫時關閉避免 Bus error
+  dask_workers: 2                               # 減少至 2 workers（若啟用）
+  crop_buffer_degrees: 2.0                      # 裁切緩衝區（度）
+  # 時間內插設定
+  enable_temporal_interp: true                  # 啟用時間內插
+  temporal_interp_method: "linear"              # 時間內插方法: linear, cubic
 
 ### output netcdf design
 registry:
