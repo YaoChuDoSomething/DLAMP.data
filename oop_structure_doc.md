@@ -92,7 +92,7 @@ classDiagram
     class Context {
         +dict config
         +load_config()
-        +get_config()
+        +get_config(key, default)
     }
     class Task {
         <<interface>>
@@ -113,11 +113,16 @@ classDiagram
         +execute(context)
         -perform_regrid()
         -vertical_interp_lnp()
+        -regrid_bilinear()
+        -temporal_interp_batch()
     }
     class Diagnostics {
         +execute(context)
     }
-    class diagnostic_registry
+    class diagnostic_registry {
+        +load_diagnostics()
+        +sort_diagnostics_by_dependencies()
+    }
 
     Pipeline --> Context : holds
     Pipeline "1" *-- "many" Task : orchestrates

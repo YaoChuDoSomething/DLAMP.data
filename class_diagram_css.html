@@ -157,14 +157,14 @@
                 <div class="class-content">
                     <div class="method">config: dict</div>
                     <div class="method">load_config()</div>
-                    <div class="method">get_config()</div>
+                    <div class="method">get_config(key, default)</div>
                 </div>
             </div>
             <div class="class-card" id="pipeline">
                 <div class="class-header">Pipeline</div>
                 <div class="class-content">
-                    <div class="method">tasks: list</div>
-                    <div class="method">add_task()</div>
+                    <div class="method">tasks: list[Task]</div>
+                    <div class="method">add_task(task)</div>
                     <div class="method">run()</div>
                 </div>
             </div>
@@ -185,26 +185,35 @@
             <div class="class-card">
                 <div class="class-header">ERA5Downloader</div>
                 <div class="class-content">
-                    <div class="method">execute()</div>
+                    <div class="method">execute(context)</div>
                 </div>
             </div>
             <div class="class-card">
                 <div class="class-header">GribToNetCDF</div>
                 <div class="class-content">
-                    <div class="method">execute()</div>
+                    <div class="method">execute(context)</div>
                 </div>
             </div>
             <div class="class-card">
                 <div class="class-header">Regridder</div>
                 <div class="class-content">
-                    <div class="method">execute()</div>
+                    <div class="method">execute(context)</div>
                     <div class="method">perform_regrid()</div>
+                    <div class="method">vertical_interp()</div>
+                    <div class="method">temporal_interp()</div>
                 </div>
             </div>
             <div class="class-card">
                 <div class="class-header">Diagnostics</div>
                 <div class="class-content">
-                    <div class="method">execute()</div>
+                    <div class="method">execute(context)</div>
+                </div>
+            </div>
+            <div class="class-card" id="registry">
+                <div class="class-header">Registry</div>
+                <div class="class-content">
+                    <div class="method">load_diagnostics()</div>
+                    <div class="method">sort_by_deps()</div>
                 </div>
             </div>
         </div>
